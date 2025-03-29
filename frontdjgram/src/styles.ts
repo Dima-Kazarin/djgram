@@ -32,7 +32,17 @@ const styles = StyleSheet.create({
         width: 70,
         height: 30,
         borderRadius: 20,
-        marginBottom: 10
+        marginBottom: 10,
+    },
+    buttons_logout: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'black',
+        width: 70,
+        height: 30,
+        borderRadius: 20,
+        marginBottom: 10,
+        left: '65%'
     },
     textButton: {
         color: '#fff'
@@ -73,23 +83,37 @@ const styles = StyleSheet.create({
     scroll: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'flex-start',
     },
     input_description: {
-        height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
-        width: '60%',
-        marginBottom: 20,
+        height: 100,
+        textAlignVertical: 'top',
+        width: '100%',
+        marginTop: 20,
         paddingLeft: 10,
-        borderRadius: 10,
-        color: 'black'
+        color: 'black',
     },
     scroll_profile: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
     },
+    add_post_button: {
+        alignItems: 'center',
+        width: '90%',
+        padding: 10,
+        marginTop: 20,
+        backgroundColor: 'blue',
+        borderRadius: 10,
+        position: 'absolute',
+        bottom: 20,
+        left: '5%'
+    },
+    image: {
+        width: 200,
+        height: 200,
+        marginTop: 20,
+    }
 })
 
 export default styles;

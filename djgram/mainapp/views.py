@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.viewsets import ViewSet
 from django.core.cache import cache
@@ -62,9 +63,13 @@ class LikeViewSet(ViewSet):
         queryset = Like.objects.all()
 
         by_post_id = request.query_params.get('by_post_id')
+        by_user_id = request.query_params.get('by_user_id')
 
         if by_post_id:
             queryset = queryset.filter(post_id=by_post_id)
+
+        if by_user_id:
+            queryset = queryset.filter(user_id=by_user_id)
 
         serializer = LikeSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -73,7 +78,9 @@ class LikeViewSet(ViewSet):
     def create(self, request):
         connection.queries.clear()
 
-        serializer = LikeSerializer(data=request.data)
+        data = request.data.copy()
+        data['user'] = request.user.id
+        serializer = LikeSerializer(data=data)
 
         if serializer.is_valid():
             like = serializer.save()
@@ -86,7 +93,7 @@ class LikeViewSet(ViewSet):
             cache.incr(cache_key)
             print(f'sadasda {len(connection.queries)}')
 
-            return Response(status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(request=LikeSerializer, tags=['Like'])
@@ -166,6 +173,17 @@ def get_current_user(request):
 
     serializer = UserSerializer(queryset, many=True)
     return Response(serializer.data)
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data['user_id'] = self.user.id
+        return data
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 # class CustomTokenObtainPairView(TokenObtainPairView):
 #     def post(self, request, *args, **kwargs):

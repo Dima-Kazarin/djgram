@@ -26,6 +26,11 @@ like_docs = extend_schema(
             name='by_post_id',
             type=OpenApiTypes.INT,
             location=OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            name='by_user_id',
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.QUERY
         )
     ],
     tags=['Like']

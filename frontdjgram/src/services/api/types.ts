@@ -14,3 +14,10 @@ export type User = {
     username: string,
     password: string
 }
+
+export type Like = {
+    id: number,
+    created_at: ReactNode,
+    post: number,
+    user: number
+}

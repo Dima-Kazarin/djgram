@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 const storeToken = async (access_token: string, refresh_token: string) => {
     try {
@@ -18,6 +19,15 @@ const getToken = async () => {
         return null;
     }
 };
+
+const getRefreshToken = async () => {
+    try {
+        return await AsyncStorage.getItem('refresh_token')
+    } catch (e) {
+        console.error('Error retrieve token', e);
+        return null;
+    }
+}
 
 const updateToken = async () => {
     try {
@@ -44,4 +54,17 @@ const removeTokens = async () => {
     await AsyncStorage.removeItem('refresh_token')
 }
 
-export default { storeToken, getToken, updateToken, removeTokens }
+const getUserId = async () => {
+    const token = await getToken()
+    if (!token) return
+
+    try {
+        const decoded: { user_id: number } = jwtDecode(token)
+        return decoded.user_id
+    } catch (error) {
+        console.error("Error decoding token:", error)
+        return
+    }
+}
+
+export default { storeToken, getToken, updateToken, removeTokens, getRefreshToken, getUserId }

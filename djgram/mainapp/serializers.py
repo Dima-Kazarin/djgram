@@ -18,13 +18,7 @@ class PostSerializer(serializers.ModelSerializer):
         fields = ('id', 'image', 'description', 'created_at', 'author', 'like_count')
 
     def get_like_count(self, obj):
-        cache_key = f'post_likes:{obj.id}'
-        like_count = cache.get(cache_key)
-
-        if like_count is None:
-            like_count = Like.objects.filter(post=obj).count()
-            cache.set(cache_key, like_count, timeout=60)
-
+        like_count = Like.objects.filter(post=obj).count()
         return like_count
 
 
