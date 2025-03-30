@@ -19,7 +19,6 @@ const styles = StyleSheet.create({
         color: 'black'
     },
     form: {
-        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         width: '100%',

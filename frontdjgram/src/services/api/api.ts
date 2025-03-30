@@ -3,7 +3,7 @@ import { Post, User, Like } from './types'
 import TokenStorage from './JwtToken'
 
 const baseQuery = fetchBaseQuery({
-    baseUrl: 'http://192.168.1.2:8000/api/',
+    baseUrl: 'http://192.168.1.6:8000/api/',
     prepareHeaders: async (headers) => {
         const token = await TokenStorage.getToken();
         if (token) {

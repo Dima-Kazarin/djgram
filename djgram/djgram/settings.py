@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'corsheaders',
     'rest_framework_simplejwt',
+    'channels',
     'mainapp',
 
 ]
@@ -63,6 +64,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'djgram.wsgi.application'
+ASGI_APPLICATION = 'djgram.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -159,4 +161,8 @@ CACHES = {
         "LOCATION": "redis://redis:6379/1",
         "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
     }
+}
+
+CHANNEL_LAYERS = {
+    "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"},
 }

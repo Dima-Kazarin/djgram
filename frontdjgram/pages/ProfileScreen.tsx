@@ -20,7 +20,6 @@ const ProfileScreen = () => {
             }
         };
         fetchUserId();
-        console.log(userId);
 
     }, [isAuthorized]);
 
@@ -57,6 +56,7 @@ const ProfileScreen = () => {
         const token = await TokenStorage.getToken()
         if (token) {
             setIsAuthorized(true)
+            
         } else {
             setIsAuthorized(false)
         }
@@ -87,7 +87,7 @@ const ProfileScreen = () => {
                     {data && data.length > 0 ? (
                         <FlatList data={data} renderItem={({ item }) => (
                             <TouchableOpacity style={styles.scroll_profile}>
-                                <Image source={{ uri: `http://192.168.1.2:8000${item.image}` }} style={{ width: 100, height: 100 }} />
+                                <Image source={{ uri: `http://192.168.1.6:8000${item.image}` }} style={{ width: 100, height: 100 }} />
                             </TouchableOpacity>
                         )}
                             keyExtractor={(item) => item.id.toString()}

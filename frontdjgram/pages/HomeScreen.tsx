@@ -4,6 +4,8 @@ import TokenStorage from '../src/services/api/JwtToken'
 import styles from '../src/styles';
 import { useAddLikeMutation, useGetAllPostsQuery, useGetLikedPostsByUserQuery, useGetUserQuery, useRemoveLikeMutation } from '../src/services/api/api';
 
+
+
 interface User {
     id: string | number;
     username: string;
@@ -11,7 +13,9 @@ interface User {
 
 const HomeScreen = () => {
     const [likedPosts, setLikedPosts] = useState<{ [key: number]: number | null }>({});
+    const [likeCounts, setLikeCounts] = useState<{ [key: number]: number }>({});
     const [userId, setUserId] = useState<number | null>(null)
+    const [socket, setSocket] = useState<{ [key: number]: WebSocket }>({})
 
     const { data: posts, refetch: refetchPosts, isFetching: postsFetching } = useGetAllPostsQuery()
     const { data: users, refetch: refetchUsers, isFetching: usersFetching } = useGetUserQuery();
@@ -33,7 +37,6 @@ const HomeScreen = () => {
             }
         };
         fetchUserId();
-        console.log(userId);
 
     }, [refetchPosts]);
 
@@ -46,6 +49,40 @@ const HomeScreen = () => {
             setLikedPosts(likedMap)
         }
     }, [likedPostsData])
+
+    const createSocketForPost = (postId: number) => {
+        if (!socket[postId]) {
+            const socketInstance = new WebSocket(`ws://192.168.1.6:8000/ws/likes/${postId}`);
+            socketInstance.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                const { post_id, like_count } = data;
+                setLikeCounts((prevState) => ({
+                    ...prevState,
+                    [post_id]: like_count,
+                }));
+            };
+
+            socketInstance.onclose = () => {
+                console.log('Websocket connection closed');
+            };
+
+            setSocket((prevState: any) => ({
+                ...prevState,
+                [postId]: socketInstance,
+            }));
+        }
+    };
+
+    const disconnectSocketForPost = (postId: number) => {
+        if (socket[postId]) {
+            socket[postId]?.close();
+            setSocket((prevState: any) => {
+                const newState = { ...prevState };
+                delete newState[postId];
+                return newState;
+            });
+        }
+    };
 
     const handleRefresh = async () => {
         await Promise.all([refetchPosts(), refetchUsers(), refetchLikedPosts()]);
@@ -61,6 +98,8 @@ const HomeScreen = () => {
                     ...prevState,
                     [post]: null,
                 }));
+
+                socket[post].send(JSON.stringify({ type: 'like_removed', post_id: post, like_count: likeCounts[post] - 1 }));
             } else {
                 const response = await addLike({ post }).unwrap();
                 setLikedPosts((prevState) => ({
@@ -68,6 +107,7 @@ const HomeScreen = () => {
                     [post]: response.id,
                 }));
 
+                socket[post].send(JSON.stringify({ type: 'like_added', post_id: post, like_count: likeCounts[post] + 1 }));
             }
         } catch (error) {
             console.error("Error adding like:", error);
@@ -84,6 +124,15 @@ const HomeScreen = () => {
         return date.toLocaleString();
     };
 
+    useEffect(() => {
+        return () => {
+            posts?.forEach((post) => {
+                createSocketForPost(post.id)
+                disconnectSocketForPost(post.id);
+            });
+        };
+    }, [posts]);
+
     return (
         <View>
             {!posts ? (
@@ -93,12 +142,12 @@ const HomeScreen = () => {
             ) : <FlatList data={posts} renderItem={({ item }) => (
                 <View style={styles.scroll}>
                     <Text style={{ fontWeight: 'bold', paddingLeft: 10 }}>{users_dict[item.author]}</Text>
-                    <Image source={{ uri: `http://192.168.1.2:8000${item.image}` }} resizeMode='cover' style={{ width: '100%', height: 400 }} />
+                    <Image source={{ uri: `http://192.168.1.6:8000${item.image}` }} resizeMode='cover' style={{ width: '100%', height: 400 }} />
                     <View style={{ flexDirection: 'row' }}>
                         <TouchableOpacity onPress={() => handleLike(item.id)}>
                             <Image style={{ left: 5, top: 2 }} source={likedPosts[item.id] ? require('../src/static/unlike.png') : require('../src/static/like.png')} />
                         </TouchableOpacity>
-                        <Text style={{ paddingLeft: 7, top: 5 }}> {item.like_count} </Text>
+                        <Text style={{ paddingLeft: 7, top: 5 }}> {likeCounts[item.id] || item.like_count} </Text>
                     </View>
                     <View style={{ flexDirection: 'row' }}>
                         <Text style={{ fontWeight: 'bold', paddingLeft: 10 }}>{users_dict[item.author]}</Text>
@@ -115,6 +164,7 @@ const HomeScreen = () => {
             }
         </View>
     );
+
 }
 
 export default HomeScreen;
