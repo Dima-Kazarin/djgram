@@ -1,19 +1,19 @@
-from datetime import timedelta
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.viewsets import ViewSet
 from django.core.cache import cache
 from django.db import connection
 
-from .models import User, Like, Post, Comment
-from .serializers import CommentSerializer, LikeSerializer, PostSerializer, UserSerializer, RegisterSerializer
-from .schemas import post_docs, like_docs, comment_docs, user_docs
+from .models import User, Like, Post, Comment, Chat, Message
+from .serializers import CommentSerializer, ChatSerializer, MessageSerializer, LikeSerializer, PostSerializer, \
+    UserSerializer, RegisterSerializer
+from .schemas import post_docs, like_docs, comment_docs, user_docs, chat_docs, member_docs, message_docs
 
 
 class PostViewSet(ViewSet):
@@ -143,10 +143,87 @@ class CommentViewSet(ViewSet):
         return Response(status=status.HTTP_200_OK)
 
 
+class ChatViewSet(ViewSet):
+    @chat_docs
+    def list(self, request):
+        queryset = Chat.objects.all()
+
+        by_id = request.query_params.get('by_id')
+
+        if by_id:
+            queryset = queryset.filter(id=by_id)
+
+        by_member_id = request.query_params.get('by_member_id')
+
+        if by_member_id:
+            queryset = queryset.filter(member=by_member_id)
+
+        serializer = ChatSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(request=ChatSerializer, tags=['Messages'])
+    def create(self, request):
+        serializer = ChatSerializer(data=request.data, partial=True)
+
+        if serializer.is_valid():
+            chat = serializer.save()
+            chat.member.add(request.user)
+            return Response(status=status.HTTP_200_OK)
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(request=ChatSerializer, tags=['Messages'])
+    def destroy(self, request, pk):
+        obj = get_object_or_404(Chat, pk=pk)
+        obj.delete()
+        return Response(status=status.HTTP_200_OK)
+
+
+class ChatMembershipViewSet(ViewSet):
+    @member_docs
+    def create(self, request, chat_id):
+        chat = get_object_or_404(Chat, id=chat_id)
+        user = request.user
+
+        if chat.member.filter(id=user.id).exists():
+            return Response({'error': 'User is already a member'}, status=status.HTTP_409_CONFLICT)
+
+        chat.member.add(user)
+
+        return Response({'message': 'User joined server successfully'}, status=status.HTTP_200_OK)
+
+
+class MessageViewSet(ViewSet):
+    @message_docs
+    def list(self, request):
+        queryset = Message.objects.all()
+
+        by_chat_id = request.query_params.get('by_chat_id')
+
+        if by_chat_id:
+            queryset = queryset.filter(chat_id=by_chat_id)
+
+        serializer = MessageSerializer(queryset, many=True)
+
+        return Response(serializer.data)
+
+    @extend_schema(request=MessageSerializer, tags=['Messages'])
+    def create(self, request):
+        data = request.data.copy()
+        data['sender'] = request.user.id
+
+        serializer = MessageSerializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
 @user_docs
 @api_view(['GET'])
 def get_username_by_id(request):
-    queryset = User.objects.all()
+    queryset = User.objects.all().order_by('id')
 
     by_id = request.query_params.get('by_id')
 

@@ -1,6 +1,26 @@
 import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
+    main: {
+        flex: 1,
+        backgroundColor: '#fff',
+    },
+    text: {
+        fontWeight: 'bold',
+        fontSize: 25,
+        paddingLeft: 10,
+        paddingTop: 7,
+    },
+    line: {
+        backgroundColor: 'black',
+        fontSize: 0.5,
+        marginTop: 10
+    },
+    line_bottom: {
+        backgroundColor: 'black',
+        fontSize: 0.5,
+        top: '82%'
+    },
     container: {
         flex: 1,
         justifyContent: 'center',
@@ -112,6 +132,14 @@ const styles = StyleSheet.create({
         width: 200,
         height: 200,
         marginTop: 20,
+    },
+    direct_button: {
+        paddingLeft: '63%',
+        top: 10,
+        width: 10
+    },
+    back_button: {
+        top: 10
     }
 })
 

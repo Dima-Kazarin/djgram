@@ -21,3 +21,19 @@ export type Like = {
     post: number,
     user: number
 }
+
+export type Chat = {
+    id: number,
+    name: string,
+    member: [
+        number
+    ]
+}
+
+export type Message = {
+    id: number,
+    content: string,
+    created_at: ReactNode,
+    sender: number,
+    chat: number
+}

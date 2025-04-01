@@ -1,9 +1,9 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { Post, User, Like } from './types'
+import { Post, User, Like, Chat, Message } from './types'
 import TokenStorage from './JwtToken'
 
 const baseQuery = fetchBaseQuery({
-    baseUrl: 'http://192.168.1.6:8000/api/',
+    baseUrl: 'http://192.168.1.5:8000/api/',
     prepareHeaders: async (headers) => {
         const token = await TokenStorage.getToken();
         if (token) {
@@ -57,6 +57,9 @@ export const postApi = createApi({
         getUser: builder.query<User[], void>({
             query: () => 'user'
         }),
+        getUserById: builder.query<User[], number>({
+            query: (userId) => `user/?by_id=${userId}`
+        }),
         loginUser: builder.mutation({
             query: (credentials) => ({
                 url: 'token/',
@@ -100,8 +103,20 @@ export const postApi = createApi({
         }),
         getLikedPostsByUser: builder.query<{post: number, id: number}[], number>({
             query: (userId) => `like/?by_user_id=${userId}`
-        })
+        }),
+        getUserChats: builder.query<Chat[], number>({
+            query: (userId) => `chat/?by_member_id=${userId}`
+        }),
+        getMessagesByChatId: builder.query<Message[], number>({
+            query: (chatId) => `message/?by_chat_id=${chatId}`
+        }),
+        getChats: builder.query<Chat[], void>({
+            query: () => 'chat/'
+        }),
+        getMessages: builder.query<Message[], void>({
+            query: () => 'message/'
+        }),
     }),
 })
 
-export const { useGetAllPostsQuery, useGetUserQuery, useLoginUserMutation, useGetUserPostsQuery, useAddPostMutation, useAddLikeMutation, useRemoveLikeMutation, useGetLikedPostsByUserQuery, useGetPostQuery } = postApi
+export const { useGetAllPostsQuery, useGetUserQuery, useGetUserByIdQuery, useLoginUserMutation, useGetUserPostsQuery, useAddPostMutation, useAddLikeMutation, useRemoveLikeMutation, useGetLikedPostsByUserQuery, useGetPostQuery, useGetUserChatsQuery, useGetMessagesByChatIdQuery, useGetChatsQuery, useGetMessagesQuery } = postApi

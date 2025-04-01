@@ -12,9 +12,12 @@ router = DefaultRouter()
 router.register(r'api/post', views.PostViewSet, basename='post')
 router.register(r'api/like', views.LikeViewSet, basename='like')
 router.register(r'api/comment', views.CommentViewSet, basename='comment')
+router.register(r'api/chat', views.ChatViewSet, basename='chat')
+router.register(r'api/message', views.MessageViewSet, basename='message')
 
 websocket_urlpatterns = [
     path(r'ws/likes/<int:post_id>', consumer.LikeConsumer.as_asgi()),
+    path(r'ws/<int:chat_id>/', consumer.ChatConsumer.as_asgi()),
 ]
 
 urlpatterns = [
@@ -22,10 +25,12 @@ urlpatterns = [
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/schema/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/token/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', views.TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/register/', views.register_view, name='register'),
     path('api/user/', views.get_username_by_id, name='username_by_id'),
     path('api/current_user/', views.get_current_user, name='current_user'),
+    path('api/member/<int:chat_id>', views.ChatMembershipViewSet.as_view({'post': 'create'}), name='member_chat')
+
 ] + router.urls + websocket_urlpatterns
 
 if settings.DEBUG:
