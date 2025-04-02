@@ -95,9 +95,16 @@ const styles = StyleSheet.create({
         padding: 5
     },
     navigation_buttons: {
+        flex: 1,
         backgroundColor: '#fff',
         flexDirection: 'row',
-        paddingTop: 70
+        paddingTop: 70,
+        position: 'absolute',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        bottom: 40,
+        left: 0,
+        right: 0,
     },
     scroll: {
         flex: 1,
@@ -135,11 +142,11 @@ const styles = StyleSheet.create({
     },
     direct_button: {
         paddingLeft: '63%',
-        top: 10,
+        top: 12,
         width: 10
     },
     back_button: {
-        top: 10
+        top: 12
     }
 })
 

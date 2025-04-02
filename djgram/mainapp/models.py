@@ -54,3 +54,6 @@ class Message(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ['created_at']

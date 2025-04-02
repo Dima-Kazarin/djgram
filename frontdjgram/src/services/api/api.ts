@@ -5,13 +5,13 @@ import TokenStorage from './JwtToken'
 const baseQuery = fetchBaseQuery({
     baseUrl: 'http://192.168.1.5:8000/api/',
     prepareHeaders: async (headers) => {
-        const token = await TokenStorage.getToken();
+        const token = await TokenStorage.getToken()
         if (token) {
-            headers.set('Authorization', `Bearer ${token}`);
+            headers.set('Authorization', `Bearer ${token}`)
         }
-        return headers;
+        return headers
     }
-});
+})
 
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
     let result = await baseQuery(args, api, extraOptions)

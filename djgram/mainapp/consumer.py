@@ -1,6 +1,6 @@
 import json
-from asgiref.sync import async_to_sync
-from channels.generic.websocket import WebsocketConsumer
+from asgiref.sync import async_to_sync, sync_to_async
+from channels.generic.websocket import WebsocketConsumer, JsonWebsocketConsumer
 from django.contrib.auth import get_user_model
 
 from .models import Like, Chat, Message
@@ -50,7 +50,7 @@ class LikeConsumer(WebsocketConsumer):
         }))
 
 
-class ChatConsumer(WebsocketConsumer):
+class ChatConsumer(JsonWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.chat_id = None
@@ -84,8 +84,7 @@ class ChatConsumer(WebsocketConsumer):
 
         async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
 
-    def receive(self, text_data=None, bytes_data=None):
-        text_data_json = json.loads(text_data)
+    def receive_json(self, content, **kwargs):
 
         # if not self.is_member:
         #     return self.user.id
@@ -93,7 +92,7 @@ class ChatConsumer(WebsocketConsumer):
         chat_id = self.chat_id
         sender = self.user
         chat = Chat.objects.get(id=chat_id)
-        message = text_data_json.get('content')
+        message = content['content']
 
         new_message = Message.objects.create(sender=sender, content=message, chat=chat)
 
@@ -111,9 +110,8 @@ class ChatConsumer(WebsocketConsumer):
         )
 
     def chat_message(self, event):
-        self.send(text_data=json.dumps({
-            'messages_list': event['messages_list']
-        }))
+        self.send_json({'messages_list': event['messages_list']})
 
-    def disconnect(self, close_code):
+    def disconnect(self, code):
         async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
+        super().disconnect(code)

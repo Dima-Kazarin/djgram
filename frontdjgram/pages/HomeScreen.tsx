@@ -1,42 +1,45 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Text, View, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
-import TokenStorage from '../src/services/api/JwtToken'
+import React, { useCallback, useEffect, useState } from 'react';
+import { Image, Text, View, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
+import TokenStorage from '../src/services/api/JwtToken';
 import styles from '../src/styles';
 import { useAddLikeMutation, useGetAllPostsQuery, useGetLikedPostsByUserQuery, useGetUserQuery, useRemoveLikeMutation } from '../src/services/api/api';
+import Header from './Header';
+import BottomNav from './BottomNav';
+import { useFocusEffect } from '@react-navigation/native';
 
 interface User {
-    id: string | number;
-    username: string;
+    id: string | number
+    username: string
 }
 
 const HomeScreen = () => {
-    const [likedPosts, setLikedPosts] = useState<{ [key: number]: number | null }>({});
-    const [likeCounts, setLikeCounts] = useState<{ [key: number]: number }>({});
+    const [likedPosts, setLikedPosts] = useState<{ [key: number]: number | null }>({})
+    const [likeCounts, setLikeCounts] = useState<{ [key: number]: number }>({})
     const [userId, setUserId] = useState<number | null>(null)
     const [socket, setSocket] = useState<{ [key: number]: WebSocket }>({})
 
     const { data: posts, refetch: refetchPosts, isFetching: postsFetching } = useGetAllPostsQuery()
-    const { data: users, refetch: refetchUsers, isFetching: usersFetching } = useGetUserQuery();
+    const { data: users, refetch: refetchUsers, isFetching: usersFetching } = useGetUserQuery()
     const [addLike, { isLoading, error }] = useAddLikeMutation()
     const [removeLike] = useRemoveLikeMutation()
     const { data: likedPostsData, refetch: refetchLikedPosts } = useGetLikedPostsByUserQuery(userId ?? 0, { skip: userId === null })
 
     const users_dict = (users || []).reduce<{ [key: string]: string }>((acc, item: User) => {
-        acc[item.id] = item.username;
-        return acc;
-    }, {});
+        acc[item.id] = item.username
+        return acc
+    }, {})
 
     useEffect(() => {
         const fetchUserId = async () => {
-            const id = await TokenStorage.getUserId();
+            const id = await TokenStorage.getUserId()
 
             if (id !== null && id != undefined) {
-                setUserId(id);
+                setUserId(id)
             }
-        };
-        fetchUserId();
+        }
+        fetchUserId()
 
-    }, [refetchPosts]);
+    }, [refetchPosts])
 
     useEffect(() => {
         if (likedPostsData) {
@@ -71,20 +74,16 @@ const HomeScreen = () => {
         }
     }
 
-    const disconnectSocketForPost = (postId: number) => {
-        if (socket[postId]) {
-            socket[postId]?.close()
-            setSocket((prevState: any) => {
-                const newState = { ...prevState }
-                delete newState[postId]
-                return newState
-            })
-        }
+    const disconnectSocketForPosts = () => {
+        Object.keys(socket).forEach((postId: any) => {
+            socket[postId].close()
+            console.log(`Disconnected socket for post ${postId}`)
+        })
     }
 
     const handleRefresh = async () => {
-        await Promise.all([refetchPosts(), refetchUsers(), refetchLikedPosts()]);
-    };
+        await Promise.all([refetchPosts(), refetchUsers(), refetchLikedPosts()])
+    }
 
     const handleLike = async (post: number) => {
         const likeId = likedPosts[post]
@@ -95,49 +94,57 @@ const HomeScreen = () => {
                 setLikedPosts((prevState) => ({
                     ...prevState,
                     [post]: null,
-                }));
+                }))
 
-                socket[post].send(JSON.stringify({ type: 'like_removed', post_id: post, like_count: likeCounts[post] - 1 }));
+                socket[post].send(JSON.stringify({ type: 'like_removed', post_id: post, like_count: likeCounts[post] - 1 }))
             } else {
-                const response = await addLike({ post }).unwrap();
+                const response = await addLike({ post }).unwrap()
                 setLikedPosts((prevState) => ({
                     ...prevState,
                     [post]: response.id,
-                }));
+                }))
 
-                socket[post].send(JSON.stringify({ type: 'like_added', post_id: post, like_count: likeCounts[post] + 1 }));
+                socket[post].send(JSON.stringify({ type: 'like_added', post_id: post, like_count: likeCounts[post] + 1 }))
             }
         } catch (error) {
-            console.error("Error adding like:", error);
+            console.error("Error adding like:", error)
 
             setLikedPosts((prevState) => ({
                 ...prevState,
                 [post]: likeId,
-            }));
+            }))
         }
     }
 
     const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleString();
-    };
+        const date = new Date(dateString)
+        return date.toLocaleString()
+    }
 
     useEffect(() => {
-        return () => {
-            posts?.forEach((post) => {
-                createSocketForPost(post.id)
-                disconnectSocketForPost(post.id)
-            });
-        };
-    }, [posts]);
+        posts?.forEach((post) => {
+            createSocketForPost(post.id)
+        })
+    }, [posts])
+
+    useFocusEffect(
+        useCallback(() => {
+            if (userId !== null) {
+                handleRefresh()
+                refetchLikedPosts()
+                console.log('asdjaijshduiashdiua')
+            }
+        }, [userId, refetchLikedPosts])
+    )
 
     return (
         <View>
+            <Header disconnectPostSockets={disconnectSocketForPosts} />
             {!posts ? (
                 <Text style={{ textAlign: 'center', marginTop: 20 }}>You must be logged in to see posts</Text>
             ) : posts && posts.length === 0 ? (
                 <Text style={{ textAlign: 'center', marginTop: 20 }}>No posts available</Text>
-            ) : <FlatList data={posts} renderItem={({ item }) => (
+            ) : <FlatList style={{ marginBottom: 110 }} data={posts} renderItem={({ item }) => (
                 <View style={styles.scroll}>
                     <Text style={{ fontWeight: 'bold', paddingLeft: 10 }}>{users_dict[item.author]}</Text>
                     <Image source={{ uri: `http://192.168.1.5:8000${item.image}` }} resizeMode='cover' style={{ width: '100%', height: 400 }} />
@@ -151,7 +158,7 @@ const HomeScreen = () => {
                         <Text style={{ fontWeight: 'bold', paddingLeft: 10 }}>{users_dict[item.author]}</Text>
                         <Text style={{ paddingLeft: 3 }}> {item.description} </Text>
                     </View>
-                    <Text style={{ paddingBottom: 15, paddingLeft: 7 }}> {formatDate(item.created_at)} </Text>
+                    <Text style={{ paddingBottom: 10, paddingLeft: 7 }}> {formatDate(item.created_at)} </Text>
                 </View>
             )}
                 keyExtractor={(item) => item.id.toString()}
@@ -160,9 +167,10 @@ const HomeScreen = () => {
                 }
             />
             }
+            <BottomNav disconnectPostSockets={disconnectSocketForPosts} />
         </View>
-    );
+    )
 
 }
 
-export default HomeScreen;
+export default HomeScreen

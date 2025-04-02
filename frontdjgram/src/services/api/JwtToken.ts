@@ -4,50 +4,50 @@ import { jwtDecode } from 'jwt-decode';
 
 const storeToken = async (access_token: string, refresh_token: string) => {
     try {
-        await AsyncStorage.setItem('access_token', access_token);
-        await AsyncStorage.setItem('refresh_token', refresh_token);
+        await AsyncStorage.setItem('access_token', access_token)
+        await AsyncStorage.setItem('refresh_token', refresh_token)
     } catch (e) {
-        console.error('Error save token', e);
+        console.error('Error save token', e)
     }
-};
+}
 
 const getToken = async () => {
     try {
         return await AsyncStorage.getItem('access_token')
     } catch (e) {
-        console.error('Error retrieve token', e);
-        return null;
+        console.error('Error retrieve token', e)
+        return null
     }
-};
+}
 
 const getRefreshToken = async () => {
     try {
         return await AsyncStorage.getItem('refresh_token')
     } catch (e) {
-        console.error('Error retrieve token', e);
-        return null;
+        console.error('Error retrieve token', e)
+        return null
     }
 }
 
 const updateToken = async () => {
     try {
-        const refresh = await AsyncStorage.getItem('refresh_token');
+        const refresh = await AsyncStorage.getItem('refresh_token')
         if (!refresh) {
-            return;
+            return
         }
 
         const data = {
             "refresh": refresh
-        };
+        }
 
-        const response = await axios.post('http://192.168.1.5:8000/api/token/refresh/', data, { withCredentials: true });
+        const response = await axios.post('http://192.168.1.5:8000/api/token/refresh/', data, { withCredentials: true })
 
-        await AsyncStorage.removeItem('access_token');
-        await AsyncStorage.setItem('access_token', response.data.access);
+        await AsyncStorage.removeItem('access_token')
+        await AsyncStorage.setItem('access_token', response.data.access)
     } catch (error) {
-        console.error('Error updating token:', error);
+        console.error('Error updating token:', error)
     }
-};
+}
 
 const removeTokens = async () => {
     await AsyncStorage.removeItem('access_token')

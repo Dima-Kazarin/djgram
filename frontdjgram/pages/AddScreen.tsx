@@ -4,15 +4,15 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import styles from '../src/styles';
 import { useAddPostMutation } from '../src/services/api/api';
 import { StackNavigationProp } from '@react-navigation/stack';
-import TokenStorage from '../src/services/api/JwtToken'
-type RootStackParamList = {
-    Home: undefined;
-};
 
-type AddScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
+type RootStackParamList = {
+    Home: undefined
+}
+
+type AddScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>
 
 interface AddScreenProps {
-    navigation: AddScreenNavigationProp;
+    navigation: AddScreenNavigationProp
 }
 
 const AddScreen: React.FC<AddScreenProps> = ({ navigation }) => {
@@ -29,9 +29,9 @@ const AddScreen: React.FC<AddScreenProps> = ({ navigation }) => {
             { mediaType: 'photo' },
             response => {
                 if (response.didCancel) {
-                    console.log('User cancelled image picker');
+                    console.log('User cancelled image picker')
                 } else if (response.errorCode) {
-                    console.log('ImagePicker Error: ', response.errorCode);
+                    console.log('ImagePicker Error: ', response.errorCode)
                 } else if (response.assets && response.assets.length > 0) {
                     const uri = response.assets[0].uri
                     if (uri)
@@ -55,18 +55,19 @@ const AddScreen: React.FC<AddScreenProps> = ({ navigation }) => {
             name: fileName,
         })
         formData.append('description', description)
-        
+
         try {
             await addPost(formData).unwrap()
-            navigation.navigate('Home');
+            navigation.navigate('Home')
         } catch (error) {
-            console.error("Error adding post: ", error);
+            console.error("Error adding post: ", error)
         }
     }
 
     return (
         <View style={{ flex: 1, justifyContent: 'flex-start', alignItems: 'center' }}>
-            <TouchableOpacity onPress={chooseImage} >
+            <Text style={{ fontSize: 18, paddingBottom: 5 }}>Select Image</Text>
+            <TouchableOpacity style={{ paddingTop: 5 }} onPress={chooseImage} >
                 <Image source={require('../src/static/choose_image.png')} />
             </TouchableOpacity>
             {photo && <Image source={{ uri: photo }} style={styles.image} />}
@@ -74,8 +75,9 @@ const AddScreen: React.FC<AddScreenProps> = ({ navigation }) => {
             <TouchableOpacity style={styles.add_post_button} onPress={handleAdd} >
                 <Text style={{ backgroundColor: 'blue', color: '#fff' }}>Add post</Text>
             </TouchableOpacity>
+            
         </View>
-    );
+    )
 }
 
-export default AddScreen;
+export default AddScreen

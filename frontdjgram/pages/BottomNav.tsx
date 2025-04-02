@@ -5,21 +5,36 @@ import { useNavigation } from '@react-navigation/native';
 import styles from '../src/styles';
 
 interface BottomNavProps {
-  navigation: StackNavigationProp<any, any>;
+  navigation: StackNavigationProp<any, any>
+  disconnectPostSockets?: () => void
 }
 
-const BottomNav = () => {
+const BottomNav = ({ disconnectPostSockets }): BottomNavProps => {
   const navigation = useNavigation<BottomNavProps>();
 
+  const handleAddPress = () => {
+    if (disconnectPostSockets) {
+      disconnectPostSockets()
+    }
+    navigation.navigate('Add')
+  };
+
+  const handleProfilePress = () => {
+    if (disconnectPostSockets) {
+      disconnectPostSockets()
+    }
+    navigation.navigate('Profile')
+  };
+
   return (
-    < SafeAreaView style={styles.navigation_buttons} >
+    <SafeAreaView style={styles.navigation_buttons} >
       <TouchableOpacity style={styles.button_home} onPress={() => navigation.navigate('Home')}>
         <Image source={require('../src/static/home.png')} />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button_add} onPress={() => navigation.navigate('Add')}>
+      <TouchableOpacity style={styles.button_add} onPress={handleAddPress}>
         <Image source={require('../src/static/add.png')} />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button_profile}  onPress={() => navigation.navigate('Profile')}>
+      <TouchableOpacity style={styles.button_profile} onPress={handleProfilePress}>
         <Image source={require('../src/static/profile.png')} />
       </TouchableOpacity>
     </SafeAreaView >

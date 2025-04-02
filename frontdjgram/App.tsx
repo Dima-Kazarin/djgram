@@ -21,14 +21,13 @@ function App(): React.JSX.Element {
       <NavigationContainer>
         <SafeAreaView style={styles.main}>
           <Stack.Navigator>
-            <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: true, animation: 'none', header: () => <Header /> }} />
+            <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false, animation: 'none' }} />
             <Stack.Screen name="Add" component={AddScreen} options={{ headerShown: true, animation: 'none', header: () => <Header /> }} />
             <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: true, animation: 'none', header: () => <Header /> }} />
-            <Stack.Screen name="ChatDetail" component={ChatDetailScreen} options={{ headerShown: true, animation: 'none', header: () => <Header /> }} />
+            <Stack.Screen name="ChatDetail" component={ChatDetailScreen} options={{ headerShown: false, animation: 'none', }} />
             <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: true, ...TransitionPresets.SlideFromRightIOS, header: () => <Header /> }} />
           </Stack.Navigator>
 
-          <BottomNav />
         </SafeAreaView>
       </NavigationContainer>
     </Provider>
