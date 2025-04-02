@@ -12,6 +12,8 @@ import styles from './src/styles';
 import Header from './pages/Header';
 import ChatScreen from './pages/ChatScreen';
 import ChatDetailScreen from './pages/ChatDetail';
+import AddChatScreen from './pages/AddChatScreen';
+import RegistrationScreen from './pages/RegistrationScreen';
 
 const Stack = createStackNavigator()
 
@@ -26,6 +28,8 @@ function App(): React.JSX.Element {
             <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: true, animation: 'none', header: () => <Header /> }} />
             <Stack.Screen name="ChatDetail" component={ChatDetailScreen} options={{ headerShown: false, animation: 'none', }} />
             <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: true, ...TransitionPresets.SlideFromRightIOS, header: () => <Header /> }} />
+            <Stack.Screen name="AddChat" component={AddChatScreen} options={{ headerShown: true, animation: 'none', header: () => <Header /> }} />
+            <Stack.Screen name="Registration" component={RegistrationScreen} options={{ headerShown: true, animation: 'none', header: () => <Header /> }} />
           </Stack.Navigator>
 
         </SafeAreaView>

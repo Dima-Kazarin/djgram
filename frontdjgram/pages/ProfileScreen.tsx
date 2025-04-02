@@ -4,8 +4,20 @@ import TokenStorage from '../src/services/api/JwtToken';
 import styles from '../src/styles';
 import { useGetPostQuery, useGetUserPostsQuery, useLoginUserMutation } from '../src/services/api/api';
 import BottomNav from './BottomNav';
+import { StackNavigationProp } from '@react-navigation/stack';
 
-const ProfileScreen = () => {
+type RootStackParamList = {
+    Registration: undefined
+}
+
+type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Registration'>
+
+interface ProfileScreenProps {
+    navigation: ProfileScreenNavigationProp
+}
+
+
+const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [isAuthorized, setIsAuthorized] = useState(false)
@@ -100,7 +112,7 @@ const ProfileScreen = () => {
                                 numColumns={3}
                             />
                         ) : (
-                            <Text>No posts</Text>
+                            <Text style={{ height: '94%' }}>No posts</Text>
                         )}
                         <View style={{ paddingTop: 23 }}>
                             <BottomNav />
@@ -118,6 +130,9 @@ const ProfileScreen = () => {
                         <TextInput placeholder='Enter password' placeholderTextColor="gray" secureTextEntry={true} onChangeText={handleChangePassword} style={styles.input} value={password} />
                         <TouchableOpacity style={styles.buttons_log} onPress={handleSubmit} >
                             <Text style={styles.textButton}>Login</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[styles.buttons_log, { width: 100 }]} onPress={() => navigation.navigate('Registration')} >
+                            <Text style={[styles.textButton, { fontSize: 16 }]}>Register</Text>
                         </TouchableOpacity>
                     </View>
                     <View style={{ paddingTop: 15 }}>

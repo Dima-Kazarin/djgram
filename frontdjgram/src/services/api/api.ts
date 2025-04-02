@@ -116,7 +116,21 @@ export const postApi = createApi({
         getMessages: builder.query<Message[], void>({
             query: () => 'message/'
         }),
+        addChat: builder.mutation({
+            query: (data) => ({
+                url: 'chat/',
+                method: 'POST',
+                body: data
+            })
+        }),
+        registerUser: builder.mutation({
+            query: (data) => ({
+                url: 'register/',
+                method: 'POST',
+                body: data,
+            })
+        })
     }),
 })
 
-export const { useGetAllPostsQuery, useGetUserQuery, useGetUserByIdQuery, useLoginUserMutation, useGetUserPostsQuery, useAddPostMutation, useAddLikeMutation, useRemoveLikeMutation, useGetLikedPostsByUserQuery, useGetPostQuery, useGetUserChatsQuery, useGetMessagesByChatIdQuery, useGetChatsQuery, useGetMessagesQuery } = postApi
+export const { useGetAllPostsQuery, useGetUserQuery, useGetUserByIdQuery, useLoginUserMutation, useGetUserPostsQuery, useAddPostMutation, useAddLikeMutation, useRemoveLikeMutation, useGetLikedPostsByUserQuery, useGetPostQuery, useGetUserChatsQuery, useGetMessagesByChatIdQuery, useGetChatsQuery, useGetMessagesQuery, useAddChatMutation, useRegisterUserMutation } = postApi

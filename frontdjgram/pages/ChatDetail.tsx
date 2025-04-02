@@ -89,7 +89,7 @@ const ChatDetailScreen = () => {
     }, [token, chatId])
 
     useEffect(() => {
-        if (chats && chats.length > 0) {
+        if (chats && chats.length > 0 && chatId) {
             const initialMessages = msg?.filter((message: any) => message.chat_id === chatId)
             setMessages(initialMessages || [])
         }
@@ -97,7 +97,8 @@ const ChatDetailScreen = () => {
 
     useEffect(() => {
         if (msg) {
-            const reversedMessages = msg.slice().reverse()
+            const filteredMessages = msg.filter((message: any) => message.chat === chatId)
+            const reversedMessages = filteredMessages.slice().reverse()
 
             if (page === 1) {
                 setMessages(reversedMessages)

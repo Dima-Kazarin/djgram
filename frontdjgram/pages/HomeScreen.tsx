@@ -14,7 +14,7 @@ interface User {
 
 const HomeScreen = () => {
     const [likedPosts, setLikedPosts] = useState<{ [key: number]: number | null }>({})
-    const [likeCounts, setLikeCounts] = useState<{ [key: number]: number }>({})
+    const [likeCounts, setLikeCounts] = useState<{ [key: number]: number | null }>({})
     const [userId, setUserId] = useState<number | null>(null)
     const [socket, setSocket] = useState<{ [key: number]: WebSocket }>({})
 
@@ -132,7 +132,6 @@ const HomeScreen = () => {
             if (userId !== null) {
                 handleRefresh()
                 refetchLikedPosts()
-                console.log('asdjaijshduiashdiua')
             }
         }, [userId, refetchLikedPosts])
     )

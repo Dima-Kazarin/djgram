@@ -21,6 +21,10 @@ const Header = ({ disconnectSocket, disconnectPostSockets }): HeaderProps => {
                 return 'Chat Screen'
             case 'Add':
                 return 'Add Post'
+            case 'AddChat':
+                return 'New Message'
+            case 'Registration':
+                return 'Registration'
             default:
                 return 'DJGRAM'
         }
@@ -45,11 +49,20 @@ const Header = ({ disconnectSocket, disconnectPostSockets }): HeaderProps => {
         navigation.navigate('Chat')
     }
 
+    const handleAddChat = () => {
+        navigation.navigate('AddChat')
+    }
+
     return (
         <SafeAreaView>
             <View style={{ flexDirection: 'row' }}>
-                {route.name === 'Chat' && (
-                    <TouchableOpacity style={styles.back_button} onPress={() => navigation.navigate('Home')}>
+                {(route.name === 'Chat' || route.name === 'AddChat') && (
+                    <TouchableOpacity style={[styles.back_button, { paddingRight: 100 }]} onPress={() => navigation.navigate('Home')}>
+                        <Image source={require('../src/static/back.png')} />
+                    </TouchableOpacity>
+                )}
+                {route.name === 'Registration' && (
+                    <TouchableOpacity style={[styles.back_button, { paddingRight: 100 }]} onPress={() => navigation.navigate('Profile')}>
                         <Image source={require('../src/static/back.png')} />
                     </TouchableOpacity>
                 )}
@@ -67,6 +80,11 @@ const Header = ({ disconnectSocket, disconnectPostSockets }): HeaderProps => {
                 {route.name === 'Home' && (
                     <TouchableOpacity style={styles.direct_button} onPress={handleDirectPress}>
                         <Image source={require('../src/static/direct.png')} />
+                    </TouchableOpacity>
+                )}
+                {route.name === 'Chat' && (
+                    <TouchableOpacity style={{ top: 12, width: 10, paddingLeft: '25%' }} onPress={handleAddChat}>
+                        <Image source={require('../src/static/add_chat.png')} />
                     </TouchableOpacity>
                 )}
             </View>
