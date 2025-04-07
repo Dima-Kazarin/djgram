@@ -1,7 +1,7 @@
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 
 from .serializers import PostSerializer, LikeSerializer, CommentSerializer, UserSerializer, ChatSerializer, \
-    MessageSerializer
+    MessageSerializer, FollowSerializer
 
 post_docs = extend_schema(
     responses=PostSerializer,
@@ -100,4 +100,57 @@ message_docs = extend_schema(
         )
     ],
     tags=['Messages']
+)
+
+follow_docs = extend_schema(
+    responses=FollowSerializer,
+    parameters=[
+        OpenApiParameter(
+            name='by_followed_id',
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            name='by_follower_id',
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.QUERY
+        )
+    ],
+    tags=['Follow']
+)
+
+count_follow_docs = extend_schema(
+    responses=FollowSerializer,
+    parameters=[
+        OpenApiParameter(
+            name='followed_id',
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.PATH
+        )
+    ],
+    tags=['Follow']
+)
+
+count_following_docs = extend_schema(
+    responses=FollowSerializer,
+    parameters=[
+        OpenApiParameter(
+            name='follower_id',
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.PATH
+        )
+    ],
+    tags=['Follow']
+)
+
+count_post_docs = extend_schema(
+    responses=PostSerializer,
+    parameters=[
+        OpenApiParameter(
+            name='user_id',
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.PATH
+        )
+    ],
+    tags=['Post']
 )

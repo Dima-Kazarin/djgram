@@ -1,7 +1,7 @@
 from django.core.cache import cache
 from rest_framework import serializers
 
-from .models import User, Post, Like, Comment, Chat, Message
+from .models import User, Post, Like, Comment, Chat, Message, Follow
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -58,4 +58,10 @@ class ChatSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
+        fields = '__all__'
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Follow
         fields = '__all__'

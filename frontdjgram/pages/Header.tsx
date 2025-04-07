@@ -3,6 +3,7 @@ import styles from '../src/styles';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
+
 interface HeaderProps {
     navigation: StackNavigationProp<any, any>
     disconnectSocket?: (chatId: number) => void
@@ -25,6 +26,12 @@ const Header = ({ disconnectSocket, disconnectPostSockets }): HeaderProps => {
                 return 'New Message'
             case 'Registration':
                 return 'Registration'
+            case 'Profile':
+                return 'Profile'
+            case 'Settings':
+                return 'Settings'
+            case 'Follow':
+                return 'Followers'
             default:
                 return 'DJGRAM'
         }
@@ -53,16 +60,28 @@ const Header = ({ disconnectSocket, disconnectPostSockets }): HeaderProps => {
         navigation.navigate('AddChat')
     }
 
+    const handleBackPressPost = () => {
+        if (disconnectPostSockets) {
+            disconnectPostSockets()
+        }
+        navigation.navigate('Profile')
+    }
+
     return (
         <SafeAreaView>
-            <View style={{ flexDirection: 'row' }}>
+            <SafeAreaView style={{ flexDirection: 'row' }}>
                 {(route.name === 'Chat' || route.name === 'AddChat') && (
                     <TouchableOpacity style={[styles.back_button, { paddingRight: 100 }]} onPress={() => navigation.navigate('Home')}>
                         <Image source={require('../src/static/back.png')} />
                     </TouchableOpacity>
                 )}
-                {route.name === 'Registration' && (
+                {route.name === 'Registration' || route.name === 'Settings' || route.name === 'Follow' && (
                     <TouchableOpacity style={[styles.back_button, { paddingRight: 100 }]} onPress={() => navigation.navigate('Profile')}>
+                        <Image source={require('../src/static/back.png')} />
+                    </TouchableOpacity>
+                )}
+                {route.name === 'PostDetail' && (
+                    <TouchableOpacity style={[styles.back_button, { paddingRight: 100 }]} onPress={handleBackPressPost}>
                         <Image source={require('../src/static/back.png')} />
                     </TouchableOpacity>
                 )}
@@ -87,7 +106,12 @@ const Header = ({ disconnectSocket, disconnectPostSockets }): HeaderProps => {
                         <Image source={require('../src/static/add_chat.png')} />
                     </TouchableOpacity>
                 )}
-            </View>
+                {route.name === 'Profile' && (
+                    <TouchableOpacity style={{ top: 12, width: 10, paddingLeft: '70%' }} onPress={() => navigation.navigate('Settings')}>
+                        <Image source={require('../src/static/menu.png')} />
+                    </TouchableOpacity>
+                )}
+            </SafeAreaView>
             <Text style={styles.line}></Text>
         </SafeAreaView>
 

@@ -67,7 +67,8 @@ const styles = StyleSheet.create({
         color: '#fff'
     },
     userdata: {
-        marginBottom: 20
+        marginBottom: 20,
+        marginRight: '50%'
     },
     button_home: {
         position: 'absolute',
@@ -147,7 +148,15 @@ const styles = StyleSheet.create({
     },
     back_button: {
         top: 12
-    }
+    },
+    subscribe_button: {
+        width: '90%', 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        backgroundColor: 'blue',
+        height: 30,
+        borderRadius: 20
+    },
 })
 
 export default styles;

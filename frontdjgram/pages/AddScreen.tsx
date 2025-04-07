@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Image, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { Image, Text, View, TextInput, TouchableOpacity, Platform, StatusBar, SafeAreaView } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import styles from '../src/styles';
 import { useAddPostMutation } from '../src/services/api/api';
 import { StackNavigationProp } from '@react-navigation/stack';
+import Header from './Header';
 
 type RootStackParamList = {
     Home: undefined
@@ -65,18 +66,21 @@ const AddScreen: React.FC<AddScreenProps> = ({ navigation }) => {
     }
 
     return (
-        <View style={{ flex: 1, justifyContent: 'flex-start', alignItems: 'center' }}>
-            <Text style={{ fontSize: 18, paddingBottom: 5 }}>Select Image</Text>
-            <TouchableOpacity style={{ paddingTop: 5 }} onPress={chooseImage} >
-                <Image source={require('../src/static/choose_image.png')} />
-            </TouchableOpacity>
-            {photo && <Image source={{ uri: photo }} style={styles.image} />}
-            <TextInput multiline={true} placeholder='Enter description...' placeholderTextColor="gray" onChangeText={handleChangeDescription} style={styles.input_description} value={description} />
-            <TouchableOpacity style={styles.add_post_button} onPress={handleAdd} >
-                <Text style={{ backgroundColor: 'blue', color: '#fff' }}>Add post</Text>
-            </TouchableOpacity>
-            
-        </View>
+        <SafeAreaView style={{ flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }}>
+            <Header />
+            <View style={{ flex: 1, justifyContent: 'flex-start', alignItems: 'center',  }}>
+                <Text style={{ fontSize: 18, paddingBottom: 5 }}>Select Image</Text>
+                <TouchableOpacity style={{ paddingTop: 5 }} onPress={chooseImage} >
+                    <Image source={require('../src/static/choose_image.png')} />
+                </TouchableOpacity>
+                {photo && <Image source={{ uri: photo }} style={styles.image} />}
+                <TextInput multiline={true} placeholder='Enter description...' placeholderTextColor="gray" onChangeText={handleChangeDescription} style={styles.input_description} value={description} />
+                <TouchableOpacity style={styles.add_post_button} onPress={handleAdd} >
+                    <Text style={{ backgroundColor: 'blue', color: '#fff' }}>Add post</Text>
+                </TouchableOpacity>
+
+            </View>
+        </SafeAreaView>
     )
 }
 

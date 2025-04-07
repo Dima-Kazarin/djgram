@@ -10,10 +10,11 @@ from rest_framework.viewsets import ViewSet
 from django.core.cache import cache
 from django.db import connection
 
-from .models import User, Like, Post, Comment, Chat, Message
+from .models import User, Like, Post, Comment, Chat, Message, Follow
 from .serializers import CommentSerializer, ChatSerializer, MessageSerializer, LikeSerializer, PostSerializer, \
-    UserSerializer, RegisterSerializer
-from .schemas import post_docs, like_docs, comment_docs, user_docs, chat_docs, member_docs, message_docs
+    UserSerializer, RegisterSerializer, FollowSerializer
+from .schemas import post_docs, like_docs, comment_docs, user_docs, chat_docs, member_docs, message_docs, follow_docs, \
+    count_follow_docs, count_following_docs, count_post_docs
 
 
 class PostViewSet(ViewSet):
@@ -218,6 +219,67 @@ class MessageViewSet(ViewSet):
             serializer.save()
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class FollowViewSet(ViewSet):
+    @follow_docs
+    def list(self, request):
+        queryset = Follow.objects.all()
+
+        by_followed_id = request.query_params.get('by_followed_id')
+        by_follower_id = request.query_params.get('by_follower_id')
+
+        if by_followed_id:
+            queryset = queryset.filter(followed_id=by_followed_id)
+
+        if by_follower_id:
+            queryset = queryset.filter(follower_id=by_follower_id)
+
+        serializer = FollowSerializer(queryset, many=True)
+
+        return Response(serializer.data)
+
+    @extend_schema(request=FollowSerializer, tags=['Follow'])
+    def create(self, request):
+        data = request.data.copy()
+        data['follower'] = request.user.id
+
+        serializer = FollowSerializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+@count_follow_docs
+@api_view(['GET'])
+def count_followers(request, followed_id=None):
+    count = Follow.objects.filter(followed_id=followed_id).count()
+    print(followed_id)
+    return Response({'followers_count': count})
+
+
+@count_following_docs
+@api_view(['GET'])
+def count_following(request, follower_id=None):
+    count = Follow.objects.filter(follower_id=follower_id).count()
+    return Response({'following_count': count})
+
+
+@count_post_docs
+@api_view(['GET'])
+def count_posts(request, user_id=None):
+    count = Post.objects.filter(author_id=user_id).count()
+    return Response({'posts_count': count})
+
+
+@extend_schema(request=FollowSerializer, tags=['Follow'])
+@api_view(['DELETE'])
+def unsubscribe(request, follower_id=None, followed_id=None):
+    obj = Follow.objects.get(follower_id=follower_id, followed_id=followed_id)
+    obj.delete()
+    return Response(status=status.HTTP_200_OK)
 
 
 @user_docs

@@ -1,4 +1,4 @@
-import { SafeAreaView, Text, View, TouchableOpacity, FlatList, TextInput } from 'react-native';
+import { SafeAreaView, Text, View, TouchableOpacity, FlatList, TextInput, Platform, StatusBar } from 'react-native';
 import React, { useEffect, useCallback, useState, useRef } from 'react';
 import TokenStorage from '../src/services/api/JwtToken';
 import { useGetChatsQuery, useGetMessagesQuery} from '../src/services/api/api';
@@ -47,7 +47,7 @@ const ChatDetailScreen = () => {
 
     const createSocketForChat = async (chatId: number) => {
         if (!socket && token) {
-            const socketInstance = new WebSocket(`ws://192.168.1.5:8000/ws/${chatId}/?token=${token}`)
+            const socketInstance = new WebSocket(`ws://192.168.1.4:8000/ws/${chatId}/?token=${token}`)
             socketInstance.onopen = () => {
                 console.log(`Connected to chat ${chatId}`)
                 setSocket(socketInstance)
@@ -98,12 +98,11 @@ const ChatDetailScreen = () => {
     useEffect(() => {
         if (msg) {
             const filteredMessages = msg.filter((message: any) => message.chat === chatId)
-            const reversedMessages = filteredMessages.slice().reverse()
 
             if (page === 1) {
-                setMessages(reversedMessages)
+                setMessages(filteredMessages)
             } else {
-                setMessages((prev) => [...reversedMessages, ...prev])
+                setMessages((prev) => [...filteredMessages, ...prev])
             }
         }
     }, [msg])
@@ -128,7 +127,7 @@ const ChatDetailScreen = () => {
     }
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={{ paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, flex: 1 }}>
             <Header disconnectSocket={disconnectSocketForChat} />
             <FlatList
                 ref={flatListRef}

@@ -14,6 +14,7 @@ router.register(r'api/like', views.LikeViewSet, basename='like')
 router.register(r'api/comment', views.CommentViewSet, basename='comment')
 router.register(r'api/chat', views.ChatViewSet, basename='chat')
 router.register(r'api/message', views.MessageViewSet, basename='message')
+router.register(r'api/follow', views.FollowViewSet, basename='follow')
 
 websocket_urlpatterns = [
     path(r'ws/likes/<int:post_id>', consumer.LikeConsumer.as_asgi()),
@@ -28,6 +29,10 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/register/', views.register_view, name='register'),
     path('api/user/', views.get_username_by_id, name='username_by_id'),
+    path('api/count_followers/<int:followed_id>/', views.count_followers, name='count_followers'),
+    path('api/count_following/<int:follower_id>/', views.count_following, name='count_following'),
+    path('api/count_posts/<int:user_id>/', views.count_posts, name='count_posts'),
+    path('api/unsubscribe/<int:follower_id>/<int:followed_id>', views.unsubscribe, name='unsubscribe'),
     path('api/current_user/', views.get_current_user, name='current_user'),
     path('api/member/<int:chat_id>', views.ChatMembershipViewSet.as_view({'post': 'create'}), name='member_chat')
 

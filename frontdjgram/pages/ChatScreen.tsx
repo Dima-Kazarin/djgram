@@ -1,10 +1,11 @@
-import { Text, View, TouchableOpacity, Image, FlatList, RefreshControl } from 'react-native';
-import styles from '../src/styles';
+import { Text, View, TouchableOpacity, Image, FlatList, RefreshControl, SafeAreaView } from 'react-native';
 import { useCallback, useEffect, useState } from 'react';
 import TokenStorage from '../src/services/api/JwtToken';
 import { useGetMessagesQuery, useGetUserChatsQuery, useGetUserQuery } from '../src/services/api/api';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import Header from './Header';
+import { StatusBar, Platform } from 'react-native';
 
 interface BottomNavProps {
     navigation: StackNavigationProp<any, any>
@@ -49,7 +50,8 @@ const ChatScreen = () => {
     )
 
     return (
-        <View>
+        <SafeAreaView style={{ paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, flex: 1 }}>
+            <Header />
             {chats && (
                 <FlatList data={chats}
                     renderItem={({ item }) => {
@@ -78,10 +80,10 @@ const ChatScreen = () => {
                     refreshControl={
                         <RefreshControl refreshing={isChatsFetching} onRefresh={handleRefresh} />
                     }
-                    contentContainerStyle={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: '100%' }}
+                    contentContainerStyle={{ flex: 1, alignItems: 'center', height: '100%' }}
                 />
             )}
-        </View>
+        </SafeAreaView>
 
     )
 }

@@ -6,7 +6,7 @@ export type Post = {
     description: string,
     created_at: ReactNode,
     author: number,
-    like_count: string
+    like_count: number
 }
 
 export type User = {
@@ -36,4 +36,11 @@ export type Message = {
     created_at: ReactNode,
     sender: number,
     chat: number
+}
+
+export type Follow = {
+    id: number,
+    created_at: ReactNode,
+    followerId: number,
+    followedId: number
 }

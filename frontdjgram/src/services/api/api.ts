@@ -1,9 +1,9 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { Post, User, Like, Chat, Message } from './types'
+import { Post, User, Like, Chat, Message, Follow } from './types'
 import TokenStorage from './JwtToken'
 
 const baseQuery = fetchBaseQuery({
-    baseUrl: 'http://192.168.1.5:8000/api/',
+    baseUrl: 'http://192.168.1.4:8000/api/',
     prepareHeaders: async (headers) => {
         const token = await TokenStorage.getToken()
         if (token) {
@@ -53,6 +53,9 @@ export const postApi = createApi({
     endpoints: (builder) => ({
         getAllPosts: builder.query<Post[], void>({
             query: () => 'post',
+        }),
+        getPostById: builder.query<Post, number>({
+            query: (postId) => `post/?by_post_id=${postId}`
         }),
         getUser: builder.query<User[], void>({
             query: () => 'user'
@@ -129,8 +132,39 @@ export const postApi = createApi({
                 method: 'POST',
                 body: data,
             })
-        })
+        }),
+        getCountPosts: builder.query<{posts_count: number}, number>({
+            query: (userId) => `count_posts/${userId}/`
+        }),
+        getCountFollowers: builder.query<{followers_count: number}, number>({
+            query: (userId) => `count_followers/${userId}/`
+        }),
+        getCountFollowing: builder.query<{following_count: number}, number>({
+            query: (userId) => `count_following/${userId}/`
+        }),
+        subscribe: builder.mutation({
+            query: (data) => ({
+                url: 'follow/',
+                method: 'POST',
+                body: data,
+            })
+        }),
+        unsubscribe: builder.mutation({
+            query: ({ followerId, followedId }: { followerId: number, followedId: number }) => ({
+                url: `unsubscribe/${followerId}/${followedId}`,
+                method: 'DELETE'
+            })
+        }),
+        getFollowUser: builder.query<Follow, { followerId: number, followedId: number }>({
+            query: ({followerId, followedId}) => `follow/?by_followed_id=${followedId}&by_follower_id=${followerId}`
+        }),
+        getFollowedUser: builder.query<Follow, number >({
+            query: (followedId) => `follow/?by_followed_id=${followedId}`
+        }),
+        getFollowerUser: builder.query<Follow, number>({
+            query: (followerId) => `follow/?by_follower_id=${followerId}`
+        }),
     }),
 })
 
-export const { useGetAllPostsQuery, useGetUserQuery, useGetUserByIdQuery, useLoginUserMutation, useGetUserPostsQuery, useAddPostMutation, useAddLikeMutation, useRemoveLikeMutation, useGetLikedPostsByUserQuery, useGetPostQuery, useGetUserChatsQuery, useGetMessagesByChatIdQuery, useGetChatsQuery, useGetMessagesQuery, useAddChatMutation, useRegisterUserMutation } = postApi
+export const { useGetAllPostsQuery, useGetFollowedUserQuery, useGetFollowerUserQuery, useGetPostByIdQuery, useGetFollowUserQuery, useGetUserQuery, useGetUserByIdQuery, useLoginUserMutation, useGetUserPostsQuery, useAddPostMutation, useAddLikeMutation, useRemoveLikeMutation, useGetLikedPostsByUserQuery, useGetPostQuery, useGetUserChatsQuery, useGetMessagesByChatIdQuery, useGetChatsQuery, useGetMessagesQuery, useAddChatMutation, useRegisterUserMutation, useGetCountPostsQuery, useGetCountFollowersQuery, useGetCountFollowingQuery, useSubscribeMutation, useUnsubscribeMutation } = postApi

@@ -1,173 +1,75 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Image, Text, View, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
-import TokenStorage from '../src/services/api/JwtToken';
-import styles from '../src/styles';
-import { useAddLikeMutation, useGetAllPostsQuery, useGetLikedPostsByUserQuery, useGetUserQuery, useRemoveLikeMutation } from '../src/services/api/api';
+import React, { useCallback, useState } from 'react';
+import { Text, View, FlatList, RefreshControl } from 'react-native';
+import { useGetAllPostsQuery } from '../src/services/api/api';
 import Header from './Header';
 import BottomNav from './BottomNav';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import PostItem from '../src/helpers/PostItem';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-interface User {
-    id: string | number
-    username: string
+interface BottomNavProps {
+    navigation: StackNavigationProp<any, any>
 }
 
 const HomeScreen = () => {
-    const [likedPosts, setLikedPosts] = useState<{ [key: number]: number | null }>({})
-    const [likeCounts, setLikeCounts] = useState<{ [key: number]: number | null }>({})
-    const [userId, setUserId] = useState<number | null>(null)
-    const [socket, setSocket] = useState<{ [key: number]: WebSocket }>({})
-
+    const navigation = useNavigation<BottomNavProps>()
     const { data: posts, refetch: refetchPosts, isFetching: postsFetching } = useGetAllPostsQuery()
-    const { data: users, refetch: refetchUsers, isFetching: usersFetching } = useGetUserQuery()
-    const [addLike, { isLoading, error }] = useAddLikeMutation()
-    const [removeLike] = useRemoveLikeMutation()
-    const { data: likedPostsData, refetch: refetchLikedPosts } = useGetLikedPostsByUserQuery(userId ?? 0, { skip: userId === null })
-
-    const users_dict = (users || []).reduce<{ [key: string]: string }>((acc, item: User) => {
-        acc[item.id] = item.username
-        return acc
-    }, {})
-
-    useEffect(() => {
-        const fetchUserId = async () => {
-            const id = await TokenStorage.getUserId()
-
-            if (id !== null && id != undefined) {
-                setUserId(id)
-            }
-        }
-        fetchUserId()
-
-    }, [refetchPosts])
-
-    useEffect(() => {
-        if (likedPostsData) {
-            const likedMap = likedPostsData.reduce<{ [key: number]: number | null }>((acc, { post, id }) => {
-                acc[post] = id
-                return acc
-            }, {})
-            setLikedPosts(likedMap)
-        }
-    }, [likedPostsData])
-
-    const createSocketForPost = (postId: number) => {
-        if (!socket[postId]) {
-            const socketInstance = new WebSocket(`ws://192.168.1.5:8000/ws/likes/${postId}`)
-            socketInstance.onmessage = (event) => {
-                const data = JSON.parse(event.data)
-                const { post_id, like_count } = data
-                setLikeCounts((prevState) => ({
-                    ...prevState,
-                    [post_id]: like_count,
-                }))
-            }
-
-            socketInstance.onclose = () => {
-                console.log('Websocket connection closed')
-            }
-
-            setSocket((prevState: any) => ({
-                ...prevState,
-                [postId]: socketInstance,
-            }))
-        }
-    }
+    const [postSockets, setPostSockets] = useState<{ [key: number]: WebSocket }>({})
+    const [refetchFuncs, setRefetchFuncs] = useState<{ [key: number]: () => void }>({})
+    const [refreshing, setRefreshing] = useState(false)
 
     const disconnectSocketForPosts = () => {
-        Object.keys(socket).forEach((postId: any) => {
-            socket[postId].close()
-            console.log(`Disconnected socket for post ${postId}`)
-        })
+        if (postSockets) {
+            Object.keys(postSockets).forEach((id: any) => {
+                postSockets[id]?.[id].close()
+                console.log(`Disconnected socket for post ${id}`)
+            })
+        }
     }
 
     const handleRefresh = async () => {
-        await Promise.all([refetchPosts(), refetchUsers(), refetchLikedPosts()])
-    }
-
-    const handleLike = async (post: number) => {
-        const likeId = likedPosts[post]
-
-        try {
-            if (likeId) {
-                await removeLike(likeId).unwrap()
-                setLikedPosts((prevState) => ({
-                    ...prevState,
-                    [post]: null,
-                }))
-
-                socket[post].send(JSON.stringify({ type: 'like_removed', post_id: post, like_count: likeCounts[post] - 1 }))
-            } else {
-                const response = await addLike({ post }).unwrap()
-                setLikedPosts((prevState) => ({
-                    ...prevState,
-                    [post]: response.id,
-                }))
-
-                socket[post].send(JSON.stringify({ type: 'like_added', post_id: post, like_count: likeCounts[post] + 1 }))
-            }
-        } catch (error) {
-            console.error("Error adding like:", error)
-
-            setLikedPosts((prevState) => ({
-                ...prevState,
-                [post]: likeId,
-            }))
-        }
-    }
-
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString)
-        return date.toLocaleString()
-    }
-
-    useEffect(() => {
-        posts?.forEach((post) => {
-            createSocketForPost(post.id)
+        setRefreshing(true)
+        await refetchPosts()
+        setRefreshing(false)
+        Object.keys(refetchFuncs).forEach(async (fn: any) => {
+            refetchFuncs[fn]()
         })
-    }, [posts])
+    }
 
     useFocusEffect(
         useCallback(() => {
-            if (userId !== null) {
-                handleRefresh()
-                refetchLikedPosts()
-            }
-        }, [userId, refetchLikedPosts])
+            handleRefresh()
+        }, [refetchFuncs])
     )
 
     return (
-        <View>
+        <SafeAreaView>
             <Header disconnectPostSockets={disconnectSocketForPosts} />
             {!posts ? (
                 <Text style={{ textAlign: 'center', marginTop: 20 }}>You must be logged in to see posts</Text>
             ) : posts && posts.length === 0 ? (
                 <Text style={{ textAlign: 'center', marginTop: 20 }}>No posts available</Text>
-            ) : <FlatList style={{ marginBottom: 110 }} data={posts} renderItem={({ item }) => (
-                <View style={styles.scroll}>
-                    <Text style={{ fontWeight: 'bold', paddingLeft: 10 }}>{users_dict[item.author]}</Text>
-                    <Image source={{ uri: `http://192.168.1.5:8000${item.image}` }} resizeMode='cover' style={{ width: '100%', height: 400 }} />
-                    <View style={{ flexDirection: 'row' }}>
-                        <TouchableOpacity onPress={() => handleLike(item.id)}>
-                            <Image style={{ left: 5, top: 2 }} source={likedPosts[item.id] ? require('../src/static/unlike.png') : require('../src/static/like.png')} />
-                        </TouchableOpacity>
-                        <Text style={{ paddingLeft: 7, top: 5 }}> {likeCounts[item.id] || item.like_count} </Text>
-                    </View>
-                    <View style={{ flexDirection: 'row' }}>
-                        <Text style={{ fontWeight: 'bold', paddingLeft: 10 }}>{users_dict[item.author]}</Text>
-                        <Text style={{ paddingLeft: 3 }}> {item.description} </Text>
-                    </View>
-                    <Text style={{ paddingBottom: 10, paddingLeft: 7 }}> {formatDate(item.created_at)} </Text>
-                </View>
-            )}
+            ) : <FlatList
+                style={{ marginBottom: 110, height: '85%' }}
+                data={posts}
+                renderItem={({ item }) => (
+                    <PostItem
+                        item={item}
+                        navigation={navigation}
+                        setPostSockets={setPostSockets}
+                        setRefetchFuncs={setRefetchFuncs}
+                        disconnectPostSockets={disconnectSocketForPosts}
+                    />
+                )}
                 keyExtractor={(item) => item.id.toString()}
                 refreshControl={
-                    <RefreshControl refreshing={postsFetching || usersFetching} onRefresh={handleRefresh} />
+                    <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
                 }
             />
             }
             <BottomNav disconnectPostSockets={disconnectSocketForPosts} />
-        </View>
+        </SafeAreaView>
     )
 
 }
