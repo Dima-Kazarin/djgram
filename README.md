@@ -1,6 +1,6 @@
-To run docker
-docker-compose up -d
-
-To run react-native
-npm i
-npm run android
+To run docker<br>
+`docker-compose up -d`<br>
+<br>
+To run react-native<br>
+`npm i`<br>
+`npm run android`
