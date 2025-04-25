@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Text, View, FlatList, RefreshControl } from 'react-native';
+import { FlatList, RefreshControl } from 'react-native';
 import { useGetAllPostsQuery } from '../src/services/api/api';
 import Header from './Header';
 import BottomNav from './BottomNav';
@@ -14,8 +14,8 @@ interface BottomNavProps {
 
 const HomeScreen = () => {
     const navigation = useNavigation<BottomNavProps>()
-    const { data: posts, refetch: refetchPosts, isFetching: postsFetching } = useGetAllPostsQuery()
-    const [postSockets, setPostSockets] = useState<{ [key: number]: WebSocket }>({})
+    const { data: posts, refetch: refetchPosts } = useGetAllPostsQuery()
+    const [postSockets, setPostSockets] = useState<{ [key: number]: { [key: number]: WebSocket } }>({})
     const [refetchFuncs, setRefetchFuncs] = useState<{ [key: number]: () => void }>({})
     const [refreshing, setRefreshing] = useState(false)
 
@@ -46,12 +46,8 @@ const HomeScreen = () => {
     return (
         <SafeAreaView>
             <Header disconnectPostSockets={disconnectSocketForPosts} />
-            {!posts ? (
-                <Text style={{ textAlign: 'center', marginTop: 20 }}>You must be logged in to see posts</Text>
-            ) : posts && posts.length === 0 ? (
-                <Text style={{ textAlign: 'center', marginTop: 20 }}>No posts available</Text>
-            ) : <FlatList
-                style={{ marginBottom: 110, height: '85%' }}
+            {posts && <FlatList
+                style={{ marginBottom: 55, height: '85%' }}
                 data={posts}
                 renderItem={({ item }) => (
                     <PostItem

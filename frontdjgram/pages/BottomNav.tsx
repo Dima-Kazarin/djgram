@@ -5,12 +5,12 @@ import { useNavigation } from '@react-navigation/native';
 import styles from '../src/styles';
 
 interface BottomNavProps {
-  navigation: StackNavigationProp<any, any>
+  navigation?: StackNavigationProp<any, any>
   disconnectPostSockets?: () => void
 }
 
-const BottomNav = ({ disconnectPostSockets }): BottomNavProps => {
-  const navigation = useNavigation<BottomNavProps>();
+const BottomNav = ({ disconnectPostSockets }: BottomNavProps) => {
+  const navigation = useNavigation<StackNavigationProp<any, any>>();
 
   const handleAddPress = () => {
     if (disconnectPostSockets) {

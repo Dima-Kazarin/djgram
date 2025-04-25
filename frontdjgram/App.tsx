@@ -8,14 +8,14 @@ import AddScreen from './pages/AddScreen';
 import { Provider } from 'react-redux';
 import { store } from './src/store';
 import styles from './src/styles';
-import Header from './pages/Header';
 import ChatScreen from './pages/ChatScreen';
-import ChatDetailScreen from './pages/ChatDetail';
+import ChatDetailScreen from './pages/ChatDetailScreen';
 import AddChatScreen from './pages/AddChatScreen';
 import RegistrationScreen from './pages/RegistrationScreen';
 import SettingsScreen from './pages/SettingsScreen';
 import PostDetailScreen from './pages/PostDetailScreen';
 import FollowerScreen from './pages/FollowerScreen';
+import EditProfileScreen from './pages/EditProfileScreen';
 
 const Stack = createStackNavigator()
 
@@ -35,6 +35,7 @@ function App(): React.JSX.Element {
             <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false, animation: 'none' }} />
             <Stack.Screen name="PostDetail" component={PostDetailScreen} options={{ headerShown: false, animation: 'none' }} />
             <Stack.Screen name="Follow" component={FollowerScreen} options={{ headerShown: false, animation: 'none' }} />
+            <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: false, animation: 'none' }} />
             </Stack.Navigator>
         </SafeAreaView>
       </NavigationContainer>

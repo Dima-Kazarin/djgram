@@ -1,13 +1,14 @@
-import { Text, View, TouchableOpacity, FlatList, RefreshControl, Platform, StatusBar } from 'react-native';
+import { Text, View, TouchableOpacity, FlatList, RefreshControl, Platform, StatusBar, Image } from 'react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import TokenStorage from '../src/services/api/JwtToken';
 import { useAddChatMutation, useGetUserQuery } from '../src/services/api/api';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect } from '@react-navigation/native';
 import Header from './Header';
+import styles from '../src/styles';
 
 type RootStackParamList = {
-    ChatDetail: undefined
+    ChatDetail: { chatId: number }
 }
 
 type AddChatScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ChatDetail'>
@@ -18,7 +19,7 @@ interface AddChatScreenProps {
 
 const AddChatScreen: React.FC<AddChatScreenProps> = ({ navigation }) => {
     const [userId, setUserId] = useState<number | null>(null)
-    const [addChat, { isLoading, error }] = useAddChatMutation()
+    const [addChat] = useAddChatMutation()
 
     const handleAddChat = async (user_id: number) => {
         try {
@@ -39,7 +40,7 @@ const AddChatScreen: React.FC<AddChatScreenProps> = ({ navigation }) => {
     useEffect(() => {
         const fetchUserId = async () => {
             const id = await TokenStorage.getUserId()
-            setUserId(id)
+            setUserId(id ?? null)
         }
         fetchUserId()
     }, [])
@@ -60,7 +61,10 @@ const AddChatScreen: React.FC<AddChatScreenProps> = ({ navigation }) => {
             <Header />
             <FlatList data={nonCurrentUsers} renderItem={({ item }) => (
                 <TouchableOpacity style={{ width: '100%' }} onPress={() => handleAddChat(item.id)}>
-                    <Text style={{ fontSize: 20, paddingBottom: 15 }}>{item.username}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', paddingBottom: 10 }}>
+                        <Image source={{ uri: `http://192.168.1.5:8000${item.icon}` }} resizeMode='cover' style={styles.post_user_icon} />
+                        <Text style={{ fontSize: 20, paddingLeft: 15 }}>{item.username}</Text>
+                    </View>
                 </TouchableOpacity>
             )}
                 keyExtractor={(item) => item.id.toString()}

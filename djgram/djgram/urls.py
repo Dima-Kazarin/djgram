@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/register/', views.register_view, name='register'),
     path('api/user/', views.get_username_by_id, name='username_by_id'),
+    path('api/user/<int:id>', views.change_profile, name='change_profile'),
     path('api/count_followers/<int:followed_id>/', views.count_followers, name='count_followers'),
     path('api/count_following/<int:follower_id>/', views.count_following, name='count_following'),
     path('api/count_posts/<int:user_id>/', views.count_posts, name='count_posts'),

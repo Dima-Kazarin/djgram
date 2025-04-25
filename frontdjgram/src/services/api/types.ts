@@ -12,7 +12,8 @@ export type Post = {
 export type User = {
     id: number,
     username: string,
-    password: string
+    password: string,
+    icon: string
 }
 
 export type Like = {
@@ -41,6 +42,6 @@ export type Message = {
 export type Follow = {
     id: number,
     created_at: ReactNode,
-    followerId: number,
-    followedId: number
+    follower: number,
+    followed: number
 }

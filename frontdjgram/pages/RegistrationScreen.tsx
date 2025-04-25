@@ -1,7 +1,6 @@
-import { Text, View, TouchableOpacity, FlatList, RefreshControl, TextInput } from 'react-native';
-import React, { useCallback, useEffect, useState } from 'react';
-import TokenStorage from '../src/services/api/JwtToken';
-import { useAddChatMutation, useGetUserQuery, useLoginUserMutation, useRegisterUserMutation } from '../src/services/api/api';
+import { Text, View, TouchableOpacity, TextInput } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { useGetUserQuery, useRegisterUserMutation } from '../src/services/api/api';
 import { StackNavigationProp } from '@react-navigation/stack';
 import styles from '../src/styles';
 
@@ -68,7 +67,7 @@ const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ navigation }) =
         const unique_username = users?.filter((user) => user.username === username)
         if (username.length > 0) {
             setTimeout(() => {
-                if (unique_username?.length > 0) {
+                if (unique_username && unique_username?.length > 0) {
                     setUsernameStatus('not unique')
                 } else {
                     setUsernameStatus('unique')

@@ -2,29 +2,33 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Text, View, TouchableOpacity, TextInput, SafeAreaView, Image, FlatList, RefreshControl } from 'react-native';
 import TokenStorage from '../src/services/api/JwtToken';
 import styles from '../src/styles';
-import { useGetCountFollowersQuery, useGetCountFollowingQuery, useGetCountPostsQuery, useGetFollowUserQuery, useGetPostQuery, useGetUserByIdQuery, useGetUserPostsQuery, useLoginUserMutation, useSubscribeMutation, useUnsubscribeMutation } from '../src/services/api/api';
+import { useGetCountFollowersQuery, useGetCountFollowingQuery, useGetCountPostsQuery, useGetFollowUserQuery, useGetUserByIdQuery, useGetUserPostsQuery, useLoginUserMutation, useSubscribeMutation, useUnsubscribeMutation } from '../src/services/api/api';
 import BottomNav from './BottomNav';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import Header from './Header';
 import { StatusBar, Platform } from 'react-native';
 
-interface ProfileProps {
-    navigation: StackNavigationProp<any, any>
+type RouteParams = {
+    ProfileScreen: {
+        isAuth?: boolean
+        profileId?: number
+    }
 }
 
 const ProfileScreen = () => {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [isAuthorized, setIsAuthorized] = useState(false)
+    const [isLoadingAuth, setIsLoadingAuth] = useState(true)
     const [userId, setUserId] = useState<number | null>(null)
     const [profileId, setProfileId] = useState<number | null>(null)
-    const [loginUser, { isLoading, isError }] = useLoginUserMutation()
+    const [loginUser] = useLoginUserMutation()
     const [subscribe] = useSubscribeMutation()
     const [unsubscribe] = useUnsubscribeMutation()
 
-    const route = useRoute()
-    const navigation = useNavigation<ProfileProps>()
+    const route = useRoute<RouteProp<RouteParams, 'ProfileScreen'>>()
+    const navigation = useNavigation<StackNavigationProp<any, any>>()
 
     useEffect(() => {
         if (route.params?.isAuth) {
@@ -108,17 +112,17 @@ const ProfileScreen = () => {
         }
     }
 
-    const checkAuthorization = async () => {
-        const token = await TokenStorage.getToken()
-        if (token) {
-            setIsAuthorized(true)
-
-        } else {
-            setIsAuthorized(false)
-        }
+    const handleEditProfile = () => {
+        navigation.navigate('EditProfile', { 'userId': userId })
     }
 
     useEffect(() => {
+        const checkAuthorization = async () => {
+            const token = await TokenStorage.getToken()
+            setIsAuthorized(!!token)
+            setIsLoadingAuth(false)
+        }
+
         checkAuthorization()
     }, [])
 
@@ -127,9 +131,10 @@ const ProfileScreen = () => {
     const { data: count_followers, refetch: followersRefetch, isFetching: followersFetching } = useGetCountFollowersQuery(currentProfileId ?? 0)
     const { data: count_following, refetch: followingRefetch, isFetching: followingFetching } = useGetCountFollowingQuery(currentProfileId ?? 0)
     const { data: follow, refetch: followRefetch, isFetching: followFetching } = useGetFollowUserQuery({ followerId: userId ?? 0, followedId: profileId ?? 0 })
+    const { data: user, refetch: userRefetch, isFetching: userFetching } = useGetUserByIdQuery(currentProfileId ?? 0)
 
     const handleRefresh = async () => {
-        await Promise.all([postsRefetch(), countRefetch(), followersRefetch(), followingRefetch(), followRefetch()])
+        await Promise.all([postsRefetch(), userRefetch(), countRefetch(), followersRefetch(), followingRefetch(), followRefetch()])
     }
 
     useFocusEffect(
@@ -137,36 +142,43 @@ const ProfileScreen = () => {
             if (currentProfileId !== null) {
                 handleRefresh()
             }
-        }, [currentProfileId, countRefetch])
+        }, [currentProfileId])
     )
 
     return (
         <SafeAreaView style={{ paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, flex: 1 }}>
             <Header />
-            {isAuthorized ? (
+            {isLoadingAuth ? (
+                <View></View>
+            ) : isAuthorized ? (
                 <SafeAreaView>
                     <View style={{ flexDirection: 'row' }}>
-                        <Text style={styles.userdata}>{currentProfileId}</Text>
-                        <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                            <Text>{count_posts?.posts_count}</Text>
-                            <Text>posts</Text>
+                        <View style={{ width: 80 }}>
+                            <Image source={{ uri: `http://192.168.1.5:8000${user?.[0]?.icon}` }} resizeMode='cover' style={styles.user_icon} />
                         </View>
-                        <TouchableOpacity onPress={() => navigation.navigate('Follow', { followedId: currentProfileId })}>
-                            <View style={{ justifyContent: 'center', alignItems: 'center', marginLeft: 10 }}>
-                                <Text>{count_followers?.followers_count}</Text>
-                                <Text>followers</Text>
+                        <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
+                            <View style={{ justifyContent: 'center', alignItems: 'center', marginLeft: 60, marginBottom: 30 }}>
+                                <Text style={{ paddingBottom: 10, fontSize: 16, fontWeight: 'bold' }}>{user?.[0]?.username}</Text>
+                                <Text>{count_posts?.posts_count}</Text>
+                                <Text>posts</Text>
                             </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => navigation.navigate('Follow', { followerId: currentProfileId })}>
-                            <View style={{ justifyContent: 'center', alignItems: 'center', marginLeft: 10 }}>
-                                <Text>{count_following?.following_count}</Text>
-                                <Text>subscriptions</Text>
-                            </View>
-                        </TouchableOpacity>
+                            <TouchableOpacity onPress={() => navigation.navigate('Follow', { followedId: currentProfileId })}>
+                                <View style={{ justifyContent: 'center', alignItems: 'center', marginLeft: 20 }}>
+                                    <Text>{count_followers?.followers_count}</Text>
+                                    <Text>followers</Text>
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => navigation.navigate('Follow', { followerId: currentProfileId })}>
+                                <View style={{ justifyContent: 'center', alignItems: 'center', marginLeft: 20 }}>
+                                    <Text>{count_following?.following_count}</Text>
+                                    <Text>subscriptions</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                     <View style={{ justifyContent: 'center', alignItems: 'center', paddingBottom: 40, paddingTop: 10 }}>
                         {userId === profileId ? (
-                            <TouchableOpacity style={[styles.subscribe_button, { backgroundColor: 'gray' }]}>
+                            <TouchableOpacity onPress={handleEditProfile} style={[styles.subscribe_button, { backgroundColor: 'gray' }]}>
                                 <Text style={{ color: '#fff' }}>Edit profile</Text>
                             </TouchableOpacity>
                         ) : follow?.length === 0 && userId !== profileId ? (
@@ -182,27 +194,26 @@ const ProfileScreen = () => {
                     </View>
                     <View>
                         {posts && posts.length > 0 ? (
-                            <FlatList style={{ height: '84%' }} data={posts} renderItem={({ item }) => (
+                            <FlatList style={{ height: '74%' }} data={posts} renderItem={({ item }) => (
                                 <TouchableOpacity style={styles.scroll_profile} onPress={() => navigation.navigate('PostDetail', { ...item })}>
-                                    <Image source={{ uri: `http://192.168.1.4:8000${item.image}` }} style={{ width: 100, height: 100 }} />
+                                    <Image source={{ uri: `http://192.168.1.5:8000${item.image}` }} style={{ width: 100, height: 100 }} />
                                 </TouchableOpacity>
                             )}
                                 keyExtractor={(item) => item.id.toString()}
                                 refreshControl={
-                                    <RefreshControl refreshing={postsFetching || countFetching || followersFetching || followingFetching || followFetching} onRefresh={handleRefresh} />
+                                    <RefreshControl refreshing={postsFetching || userFetching || countFetching || followersFetching || followingFetching || followFetching} onRefresh={handleRefresh} />
                                 }
                                 numColumns={3}
                             />
                         ) : (
-                            <Text style={{ height: '89%' }}>No posts</Text>
+                            <View style={{ height: '82%' }}></View>
                         )}
-                        <View style={{ paddingTop: 23 }}>
+                        <View style={{ bottom: 55 }}>
                             <BottomNav />
                         </View>
                     </View>
                 </SafeAreaView>
             ) : (
-
                 <View style={{ flex: 1 }}>
                     <View style={styles.form}>
                         <Text style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 10 }}>

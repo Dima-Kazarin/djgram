@@ -40,7 +40,7 @@ const updateToken = async () => {
             "refresh": refresh
         }
 
-        const response = await axios.post('http://192.168.1.4:8000/api/token/refresh/', data, { withCredentials: true })
+        const response = await axios.post('http://192.168.1.5:8000/api/token/refresh/', data, { withCredentials: true })
 
         await AsyncStorage.removeItem('access_token')
         await AsyncStorage.setItem('access_token', response.data.access)

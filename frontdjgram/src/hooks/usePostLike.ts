@@ -30,13 +30,13 @@ export const usePostLike = ({ postId, initialLikeCount }: UsePostLikeParams) => 
   useEffect(() => {
     const fetchUserId = async () => {
       const id = await TokenStorage.getUserId()
-      setUserId(id)
+      setUserId(id ?? 0)
     }
     fetchUserId()
   }, [])
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://192.168.1.4:8000/ws/likes/${postId}`)
+    const ws = new WebSocket(`ws://192.168.1.5:8000/ws/likes/${postId}`)
 
     ws.onopen = () => {
       console.log(`Websocket for ${postId} open`)

@@ -7,7 +7,7 @@ from .models import User, Post, Like, Comment, Chat, Message, Follow
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'password')
+        fields = ('id', 'username', 'password', 'icon')
 
 
 class PostSerializer(serializers.ModelSerializer):

@@ -1,9 +1,9 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { Post, User, Like, Chat, Message, Follow } from './types'
+import { Post, User, Chat, Message, Follow } from './types'
 import TokenStorage from './JwtToken'
 
 const baseQuery = fetchBaseQuery({
-    baseUrl: 'http://192.168.1.4:8000/api/',
+    baseUrl: 'http://192.168.1.5:8000/api/',
     prepareHeaders: async (headers) => {
         const token = await TokenStorage.getToken()
         if (token) {
@@ -104,7 +104,7 @@ export const postApi = createApi({
                 method: 'DELETE'
             })
         }),
-        getLikedPostsByUser: builder.query<{post: number, id: number}[], number>({
+        getLikedPostsByUser: builder.query<{ post: number, id: number }[], number>({
             query: (userId) => `like/?by_user_id=${userId}`
         }),
         getUserChats: builder.query<Chat[], number>({
@@ -133,13 +133,13 @@ export const postApi = createApi({
                 body: data,
             })
         }),
-        getCountPosts: builder.query<{posts_count: number}, number>({
+        getCountPosts: builder.query<{ posts_count: number }, number>({
             query: (userId) => `count_posts/${userId}/`
         }),
-        getCountFollowers: builder.query<{followers_count: number}, number>({
+        getCountFollowers: builder.query<{ followers_count: number }, number>({
             query: (userId) => `count_followers/${userId}/`
         }),
-        getCountFollowing: builder.query<{following_count: number}, number>({
+        getCountFollowing: builder.query<{ following_count: number }, number>({
             query: (userId) => `count_following/${userId}/`
         }),
         subscribe: builder.mutation({
@@ -155,16 +155,23 @@ export const postApi = createApi({
                 method: 'DELETE'
             })
         }),
-        getFollowUser: builder.query<Follow, { followerId: number, followedId: number }>({
-            query: ({followerId, followedId}) => `follow/?by_followed_id=${followedId}&by_follower_id=${followerId}`
+        getFollowUser: builder.query<Follow[], { followerId: number, followedId: number }>({
+            query: ({ followerId, followedId }) => `follow/?by_followed_id=${followedId}&by_follower_id=${followerId}`
         }),
-        getFollowedUser: builder.query<Follow, number >({
+        getFollowedUser: builder.query<Follow[], number>({
             query: (followedId) => `follow/?by_followed_id=${followedId}`
         }),
-        getFollowerUser: builder.query<Follow, number>({
+        getFollowerUser: builder.query<Follow[], number>({
             query: (followerId) => `follow/?by_follower_id=${followerId}`
         }),
+        changeProfile: builder.mutation({
+            query: ({ userId, formData }) => ({
+                url: `user/${userId}`,
+                method: 'PUT',
+                body: formData
+            })
+        })
     }),
 })
 
-export const { useGetAllPostsQuery, useGetFollowedUserQuery, useGetFollowerUserQuery, useGetPostByIdQuery, useGetFollowUserQuery, useGetUserQuery, useGetUserByIdQuery, useLoginUserMutation, useGetUserPostsQuery, useAddPostMutation, useAddLikeMutation, useRemoveLikeMutation, useGetLikedPostsByUserQuery, useGetPostQuery, useGetUserChatsQuery, useGetMessagesByChatIdQuery, useGetChatsQuery, useGetMessagesQuery, useAddChatMutation, useRegisterUserMutation, useGetCountPostsQuery, useGetCountFollowersQuery, useGetCountFollowingQuery, useSubscribeMutation, useUnsubscribeMutation } = postApi
+export const { useChangeProfileMutation, useGetAllPostsQuery, useGetFollowedUserQuery, useGetFollowerUserQuery, useGetPostByIdQuery, useGetFollowUserQuery, useGetUserQuery, useGetUserByIdQuery, useLoginUserMutation, useGetUserPostsQuery, useAddPostMutation, useAddLikeMutation, useRemoveLikeMutation, useGetLikedPostsByUserQuery, useGetPostQuery, useGetUserChatsQuery, useGetMessagesByChatIdQuery, useGetChatsQuery, useGetMessagesQuery, useAddChatMutation, useRegisterUserMutation, useGetCountPostsQuery, useGetCountFollowersQuery, useGetCountFollowingQuery, useSubscribeMutation, useUnsubscribeMutation } = postApi

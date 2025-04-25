@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 
 
 class User(AbstractUser):
-    pass
+    icon = models.ImageField(upload_to='icon/', null=True, blank=True, default='icon/default.png')
 
 
 class Post(models.Model):

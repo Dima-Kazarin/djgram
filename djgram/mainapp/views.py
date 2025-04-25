@@ -306,12 +306,24 @@ def register_view(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@extend_schema(responses=None, tags=['User'])
 @api_view(['GET'])
 def get_current_user(request):
     queryset = User.objects.filter(id=request.user.id)
 
     serializer = UserSerializer(queryset, many=True)
     return Response(serializer.data)
+
+
+@extend_schema(request=UserSerializer, tags=['User'])
+@api_view(['PUT'])
+def change_profile(request, id=None):
+    obj = get_object_or_404(User, id=id)
+    serializer = UserSerializer(obj, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):

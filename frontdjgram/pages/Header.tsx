@@ -1,18 +1,31 @@
-import { SafeAreaView, Text, View, TouchableOpacity, Image, Animated } from 'react-native';
+import { SafeAreaView, Text, TouchableOpacity, Image } from 'react-native';
 import styles from '../src/styles';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 
 
 interface HeaderProps {
-    navigation: StackNavigationProp<any, any>
     disconnectSocket?: (chatId: number) => void
     disconnectPostSockets?: () => void
 }
 
-const Header = ({ disconnectSocket, disconnectPostSockets }): HeaderProps => {
-    const navigation = useNavigation<HeaderProps>()
-    const route = useRoute()
+type RootStackParamList = {
+    Chat: undefined
+    ChatDetail: { chatId: number }
+    PostDetail: undefined
+    Add: undefined
+    Home: undefined
+    AddChat: undefined
+    Registration: undefined
+    Profile: undefined
+    Settings: undefined
+    Follow: undefined
+    EditProfile: undefined
+};
+
+const Header = ({ disconnectSocket, disconnectPostSockets }: HeaderProps) => {
+    const navigation = useNavigation<StackNavigationProp<any, any>>()
+    const route = useRoute<RouteProp<RootStackParamList>>()
 
     const getHeaderText = () => {
         switch (route.name) {
@@ -32,6 +45,8 @@ const Header = ({ disconnectSocket, disconnectPostSockets }): HeaderProps => {
                 return 'Settings'
             case 'Follow':
                 return 'Followers'
+            case 'EditProfile':
+                return 'Edit Profile'
             default:
                 return 'DJGRAM'
         }
@@ -40,7 +55,7 @@ const Header = ({ disconnectSocket, disconnectPostSockets }): HeaderProps => {
     const handleBackPress = () => {
         if (route.name === 'ChatDetail') {
             const chatId = route.params?.chatId
-            if (chatId) {
+            if (chatId && disconnectSocket) {
                 disconnectSocket(chatId)
             }
             navigation.navigate('Chat')
@@ -75,7 +90,7 @@ const Header = ({ disconnectSocket, disconnectPostSockets }): HeaderProps => {
                         <Image source={require('../src/static/back.png')} />
                     </TouchableOpacity>
                 )}
-                {route.name === 'Registration' || route.name === 'Settings' || route.name === 'Follow' && (
+                {route.name === 'Registration' || route.name === 'EditProfile' || route.name === 'Settings' || route.name === 'Follow' && (
                     <TouchableOpacity style={[styles.back_button, { paddingRight: 100 }]} onPress={() => navigation.navigate('Profile')}>
                         <Image source={require('../src/static/back.png')} />
                     </TouchableOpacity>
@@ -102,7 +117,7 @@ const Header = ({ disconnectSocket, disconnectPostSockets }): HeaderProps => {
                     </TouchableOpacity>
                 )}
                 {route.name === 'Chat' && (
-                    <TouchableOpacity style={{ top: 12, width: 10, paddingLeft: '25%' }} onPress={handleAddChat}>
+                    <TouchableOpacity style={{ top: 12, width: 10, paddingLeft: '18%' }} onPress={handleAddChat}>
                         <Image source={require('../src/static/add_chat.png')} />
                     </TouchableOpacity>
                 )}

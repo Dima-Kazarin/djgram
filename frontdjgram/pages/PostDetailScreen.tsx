@@ -1,20 +1,25 @@
 import React, { useCallback, useState } from 'react';
 import { Platform, RefreshControl, SafeAreaView, StatusBar } from 'react-native';
-import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Header from './Header';
 import PostItem from '../src/helpers/PostItem';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-interface BottomNavProps {
-    navigation: StackNavigationProp<any, any>
+interface RouteParams {
+    id: number;
+    image: string;
+    description: string;
+    created_at: string;
+    author: string;
+    like_count: number;
 }
 
 const PostDetailScreen = () => {
-    const navigation = useNavigation<BottomNavProps>()
-    const [postSockets, setPostSockets] = useState<{ [key: number]: WebSocket }>({})
+    const navigation = useNavigation<StackNavigationProp<any, any>>()
+    const [postSockets, setPostSockets] = useState<{ [key: number]: { [key: number]: WebSocket } }>({})
     const [refetchFuncs, setRefetchFuncs] = useState<{ [key: number]: () => void }>({})
-    const route = useRoute()
+    const route = useRoute<RouteProp<Record<string, RouteParams>, string>>()
     const { id, image, description, created_at, author, like_count } = route.params
     const [refreshing, setRefreshing] = useState(false)
 

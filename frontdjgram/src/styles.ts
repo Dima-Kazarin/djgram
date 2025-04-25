@@ -38,6 +38,16 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         color: 'black'
     },
+    edit_input: {
+        height: 40,
+        borderColor: 'gray',
+        borderWidth: 1,
+        width: '60%',
+        marginBottom: 20,
+        marginLeft: 50,
+        borderRadius: 10,
+        color: 'black'
+    },
     form: {
         justifyContent: 'center',
         alignItems: 'center',
@@ -66,9 +76,27 @@ const styles = StyleSheet.create({
     textButton: {
         color: '#fff'
     },
-    userdata: {
+    user_icon: {
         marginBottom: 20,
-        marginRight: '50%'
+        width: 80, 
+        height: 80,
+        left: 15,
+        top: 7,
+        borderRadius: 50
+    },
+    chat_user_icon: {
+        width: 50,
+        height: 50,
+        borderRadius: 50,
+        marginRight: 10
+    },
+    post_user_icon: {
+        width: 40, 
+        height: 40, 
+        left: 2, 
+        top: 7, 
+        marginBottom: 10,
+        borderRadius: 50
     },
     button_home: {
         position: 'absolute',
@@ -103,7 +131,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         alignItems: 'flex-end',
         justifyContent: 'center',
-        bottom: 40,
+        bottom: 0,
         left: 0,
         right: 0,
     },
@@ -122,8 +150,9 @@ const styles = StyleSheet.create({
     },
     scroll_profile: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'flex-start',
+        left: 15,
+        width: 100,
     },
     add_post_button: {
         alignItems: 'center',

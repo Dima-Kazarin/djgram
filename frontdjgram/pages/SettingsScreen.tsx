@@ -4,12 +4,9 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
 import TokenStorage from '../src/services/api/JwtToken';
 import Header from './Header';
-interface SettingsProps {
-    navigation: StackNavigationProp<any, any>
-}
 
 const SettingsScreen = () => {
-    const navigation = useNavigation<SettingsProps>()
+    const navigation = useNavigation<StackNavigationProp<any, any>>()
 
     const handleLogout = async () => {
         TokenStorage.removeTokens()

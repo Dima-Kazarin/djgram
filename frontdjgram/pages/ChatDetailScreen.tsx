@@ -1,9 +1,15 @@
 import { SafeAreaView, Text, View, TouchableOpacity, FlatList, TextInput, Platform, StatusBar } from 'react-native';
 import React, { useEffect, useCallback, useState, useRef } from 'react';
 import TokenStorage from '../src/services/api/JwtToken';
-import { useGetChatsQuery, useGetMessagesQuery} from '../src/services/api/api';
-import { useRoute } from '@react-navigation/native';
+import { useGetChatsQuery, useGetMessagesQuery } from '../src/services/api/api';
+import { RouteProp, useRoute } from '@react-navigation/native';
 import Header from './Header';
+
+type RootStackParamList = {
+    ChatDetail: { chatId: number }
+}
+
+type ChatDetailRouteProp = RouteProp<RootStackParamList, 'ChatDetail'>
 
 const ChatDetailScreen = () => {
     const [socket, setSocket] = useState<WebSocket | null>(null)
@@ -15,16 +21,16 @@ const ChatDetailScreen = () => {
     const [loadingMore, setLoadingMore] = useState(false);
 
     const { data: chats } = useGetChatsQuery()
-    const { data: msg, refetch, isFetching } = useGetMessagesQuery()
+    const { data: msg, refetch } = useGetMessagesQuery()
     const flatListRef = useRef<FlatList<any>>(null)
 
-    const route = useRoute()
-    const { chatId } = route.params
+    const route = useRoute<ChatDetailRouteProp>()
+    const chatId = route.params?.chatId
 
     useEffect(() => {
         const fetchUserId = async () => {
             const id = await TokenStorage.getUserId()
-            setUserId(id)
+            setUserId(id ?? 0)
         }
         fetchUserId()
     }, [])
@@ -47,7 +53,7 @@ const ChatDetailScreen = () => {
 
     const createSocketForChat = async (chatId: number) => {
         if (!socket && token) {
-            const socketInstance = new WebSocket(`ws://192.168.1.4:8000/ws/${chatId}/?token=${token}`)
+            const socketInstance = new WebSocket(`ws://192.168.1.5:8000/ws/${chatId}/?token=${token}`)
             socketInstance.onopen = () => {
                 console.log(`Connected to chat ${chatId}`)
                 setSocket(socketInstance)
@@ -58,9 +64,13 @@ const ChatDetailScreen = () => {
 
                 setMessages((prevState) => {
                     const existingMessageIds = new Set(prevState.map((msg) => msg.id))
-                    const newMessages = messages_list.filter((msg) => !existingMessageIds.has(msg.id))
+                    const newMessages = messages_list.filter((msg: any) => !existingMessageIds.has(msg.id))
 
-                    return [...prevState, ...newMessages].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+                    return [...prevState, ...newMessages].sort((a, b) => {
+                        const dateA = new Date(a.created_at).getTime()
+                        const dateB = new Date(b.created_at).getTime()
+                        return dateA - dateB
+                    })
                 })
             }
 
@@ -80,7 +90,8 @@ const ChatDetailScreen = () => {
         if (socket) {
             socket?.close()
             console.log(`Socket closed for chat ${chatId}`)
-        }}
+        }
+    }
 
     useEffect(() => {
         if (chatId && token) {
@@ -136,8 +147,8 @@ const ChatDetailScreen = () => {
                 renderItem={({ item }) => (
                     <View
                         style={{
-                            alignSelf: item.sender === userId ? 'flex-end': 'flex-start',
-                            backgroundColor: item.sender === userId ? '#DCF8C6': '#FFFFFF',
+                            alignSelf: item.sender === userId ? 'flex-end' : 'flex-start',
+                            backgroundColor: item.sender === userId ? '#DCF8C6' : '#FFFFFF',
                             padding: 10,
                             borderRadius: 10,
                             marginBottom: 5,
@@ -156,8 +167,9 @@ const ChatDetailScreen = () => {
             />
             <View style={{ flexDirection: 'row', padding: 10, alignItems: 'center' }}>
                 <TextInput
-                    style={{ flex: 1, borderWidth: 1, borderRadius: 10, padding: 10 }}
+                    style={{ flex: 1, borderWidth: 1, borderRadius: 10, padding: 10, color: 'black' }}
                     placeholder="Enter message"
+                    placeholderTextColor={'black'}
                     onChangeText={handleChangeMessage}
                     value={content}
                 />
